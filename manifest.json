@@ -1,0 +1,14 @@
+{
+  "name": "授業欠課時数管理",
+  "short_name": "欠課管理",
+  "description": "クラスの出欠・欠課時数を管理するアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
