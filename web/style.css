@@ -47,6 +47,7 @@ body {
 .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .app-title    { font-size: 17px; font-weight: 600; white-space: nowrap; }
 .icon-btn     { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+.app-version { font-size: 11px; color: rgba(255,255,255,.6); white-space: nowrap; }
 .icon-btn:hover { background: rgba(255,255,255,.2); }
 
 .select-sm {

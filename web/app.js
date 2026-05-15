@@ -2,6 +2,9 @@
 // app.js - 出欠管理アプリ メインロジック
 // =============================================
 
+// ===== バージョン =====
+const VERSION = '20260515-002';
+
 // ===== 状態 =====
 const STATE = {
   gasUrl:     localStorage.getItem('gasUrl') || '',
@@ -70,6 +73,10 @@ const els = {
 
 // ===== 初期化 =====
 function init() {
+  // バージョン表示
+  const versionEl = $('app-version');
+  if (versionEl) versionEl.textContent = 'v' + VERSION;
+
   // 今日の日付をデフォルトに
   const today = new Date().toISOString().split('T')[0];
   els.dateInput.value = today;
