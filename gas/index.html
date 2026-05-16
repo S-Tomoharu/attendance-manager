@@ -158,8 +158,6 @@
 <!-- トースト通知 -->
 <div class="toast" id="toast"></div>
 
-<script>
-<?!= HtmlService.createHtmlOutputFromFile('app').getContent(); ?>
-</script>
+<?!= '<script>' + HtmlService.createHtmlOutputFromFile('app').getContent() + '</script>'; ?>
 </body>
 </html>
