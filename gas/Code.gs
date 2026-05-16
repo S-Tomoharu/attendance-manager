@@ -4,8 +4,7 @@
 
 // GASウェブアプリのエントリーポイント（GET）- HTMLを配信
 function doGet(e) {
-  return HtmlService.createTemplateFromFile('index')
-    .evaluate()
+  return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('授業欠課時数管理')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
