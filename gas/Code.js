@@ -2,30 +2,35 @@
 // Code.gs - メインルーター
 // =============================================
 
-// GASウェブアプリのエントリーポイント（GET）- HTMLを配信
+// GASウェブアプリのエントリーポイント（GET）
 function doGet(e) {
-  return HtmlService.createTemplateFromFile('index')
-    .evaluate()
-    .setTitle('授業欠課時数管理')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  const action = e.parameter.action;
+
+  try {
+    switch (action) {
+      case 'getStudents':     return jsonResponse(getStudents(e.parameter));
+      case 'getAttendance':   return jsonResponse(getAttendance(e.parameter));
+      case 'getSettings':     return jsonResponse(getSettings(e.parameter));
+      case 'getYears':        return jsonResponse(getYears());
+      default:
+        return jsonResponse({ error: 'Unknown action: ' + action }, 400);
+    }
+  } catch (err) {
+    return jsonResponse({ error: err.message }, 500);
+  }
 }
 
-// GASウェブアプリのエントリーポイント（POST）- APIリクエスト処理
+// GASウェブアプリのエントリーポイント（POST）
 function doPost(e) {
   const data = JSON.parse(e.postData.contents);
   const action = data.action;
 
   try {
     switch (action) {
-      case 'getStudents':     return jsonResponse(getStudents(data));
-      case 'getAttendance':   return jsonResponse(getAttendance(data));
-      case 'getSettings':     return jsonResponse(getSettings(data));
-      case 'getYears':        return jsonResponse(getYears());
       case 'setup':           return jsonResponse(setupYear(data));
       case 'saveStudents':    return jsonResponse(saveStudents(data));
       case 'saveAttendance':  return jsonResponse(saveAttendance(data));
       case 'saveSettings':    return jsonResponse(saveSettings(data));
-      case 'switchYear':      return jsonResponse(switchYear(data));
       default:
         return jsonResponse({ error: 'Unknown action: ' + action }, 400);
     }
@@ -35,10 +40,11 @@ function doPost(e) {
 }
 
 // JSONレスポンスを返すヘルパー
-function jsonResponse(data) {
-  return ContentService
+function jsonResponse(data, status) {
+  const output = ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+  return output;
 }
 
 // 現在選択中のスプレッドシートIDをスクリプトプロパティから取得
@@ -55,14 +61,3 @@ function getYears() {
   const years = props.getProperty('YEARS');
   return { years: years ? JSON.parse(years) : [] };
 }
-
-// クライアントサイドから呼び出し可能な関数群
-function clientGetStudents(params)      { return getStudents(params); }
-function clientGetAttendance(params)    { return getAttendance(params); }
-function clientGetSettings(params)      { return getSettings(params); }
-function clientGetYears()               { return getYears(); }
-function clientSetupYear(data)          { return setupYear(data); }
-function clientSaveStudents(data)       { return saveStudents(data); }
-function clientSaveAttendance(data)     { return saveAttendance(data); }
-function clientSaveSettings(data)       { return saveSettings(data); }
-function clientSwitchYear(data)         { return switchYear(data); }

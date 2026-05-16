@@ -1,12 +1,8 @@
 #!/bin/bash
 
-# デプロイスクリプト：バージョンを自動インクリメントしてプッシュ
+# デプロイスクリプト：バージョンを自動インクリメントしてpush（GAS + GitHub）
 
-APP_JS="web/app.js"
-INDEX_HTML="web/index.html"
-STYLE_CSS="web/style.css"
-SW_JS="web/sw.js"
-MANIFEST="web/manifest.json"
+APP_HTML="gas/app.html"
 VERSION_FILE=".deploy_version"
 
 # 今日の日付を取得（YYYYMMDD形式）
@@ -38,20 +34,23 @@ echo "新しいバージョン: $NEW_VERSION"
 # バージョンを記録ファイルに保存
 echo "$NEW_VERSION" > "$VERSION_FILE"
 
-# app.jsのVERSION定数を更新
-if [ -f "$APP_JS" ]; then
-  sed -i.bak "s/const VERSION = '.*'/const VERSION = '$NEW_VERSION'/" "$APP_JS"
-  rm "${APP_JS}.bak"
-  echo "更新: $APP_JS"
+# app.htmlのVERSION定数を更新
+if [ -f "$APP_HTML" ]; then
+  sed -i.bak "s/const VERSION = '.*'/const VERSION = '$NEW_VERSION'/" "$APP_HTML"
+  rm "${APP_HTML}.bak"
+  echo "更新: $APP_HTML"
 else
-  echo "⚠️ ファイルが見つかりません: $APP_JS"
+  echo "⚠️ ファイルが見つかりません: $APP_HTML"
 fi
 
-# コミット（全ファイル）
-git add "$VERSION_FILE" "$APP_JS" "$INDEX_HTML" "$STYLE_CSS" "$SW_JS" "$MANIFEST"
+# GitHubにpush
+git add .
 git commit -m "Bump version to $NEW_VERSION"
-
-# プッシュ
 git push origin main
+
+# GASにpush
+cd gas
+clasp push
+cd ..
 
 echo "✅ デプロイ完了: $NEW_VERSION"

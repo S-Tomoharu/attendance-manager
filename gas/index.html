@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>授業欠課時数管理</title>
+  <base target="_top">
+  <style>
+    <?!= HtmlService.createHtmlOutputFromFile('style').getContent(); ?>
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="header">
+  <div class="header-left">
+    <button class="icon-btn" id="menu-btn" aria-label="メニュー">☰</button>
+    <h1 class="app-title">欠課管理</h1>
+    <span class="app-version" id="app-version"></span>
+  </div>
+  <div class="header-right">
+    <select id="class-select" class="select-sm"></select>
+    <select id="period-select" class="select-sm">
+      <option value="1">1限</option>
+      <option value="2">2限</option>
+      <option value="3">3限</option>
+      <option value="4">4限</option>
+      <option value="5">5限</option>
+      <option value="6">6限</option>
+    </select>
+    <input type="date" id="date-input" class="select-sm">
+    <button class="btn-primary" id="save-btn">保存</button>
+  </div>
+</header>
+
+<!-- サイドメニュー -->
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-header">
+    <span>メニュー</span>
+    <button class="icon-btn" id="close-menu-btn">✕</button>
+  </div>
+  <ul class="sidenav-list">
+    <li><a href="#" class="sidenav-item active" data-view="seat">座席マップ</a></li>
+    <li><a href="#" class="sidenav-item" data-view="number">出席番号</a></li>
+    <li><a href="#" class="sidenav-item" data-view="history">出欠履歴</a></li>
+    <li><a href="#" class="sidenav-item" data-view="settings">設定</a></li>
+    <li><a href="#" class="sidenav-item" data-view="setup">年度セットアップ</a></li>
+  </ul>
+</nav>
+<div class="overlay" id="overlay"></div>
+
+<!-- メインコンテンツ -->
+<main class="main">
+
+  <!-- 座席マップビュー -->
+  <section class="view active" id="view-seat">
+    <div class="view-toolbar">
+      <div class="legend">
+        <span class="legend-item present">出席</span>
+        <span class="legend-item absent">欠席</span>
+        <span class="legend-item late">遅刻/早退</span>
+        <span class="legend-item excused">公欠</span>
+        <span class="legend-item leave">休学</span>
+      </div>
+      <div class="absent-count">欠席等: <span id="absent-count">0</span>人</div>
+    </div>
+    <div class="blackboard">黒板</div>
+    <div class="seat-map" id="seat-map"></div>
+  </section>
+
+  <!-- 出席番号ビュー -->
+  <section class="view" id="view-number">
+    <div class="number-search">
+      <input type="number" id="number-input" placeholder="出席番号を入力" min="1" max="99">
+      <button class="btn-primary" id="number-search-btn">検索</button>
+    </div>
+    <div class="student-list" id="student-list"></div>
+  </section>
+
+  <!-- 出欠履歴ビュー -->
+  <section class="view" id="view-history">
+    <div class="history-filter">
+      <input type="date" id="history-date">
+      <button class="btn-secondary" id="history-load-btn">読み込む</button>
+    </div>
+    <div class="history-table-wrap">
+      <table class="history-table" id="history-table">
+        <thead>
+          <tr><th>日付</th><th>時限</th><th>出席番号</th><th>名前</th><th>状態</th></tr>
+        </thead>
+        <tbody id="history-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 設定ビュー -->
+  <section class="view" id="view-settings">
+    <h2 class="section-title">クラス設定</h2>
+    <div class="settings-grid" id="settings-grid"></div>
+    <div class="settings-actions">
+      <button class="btn-primary" id="save-settings-btn">設定を保存</button>
+    </div>
+
+    <h2 class="section-title" style="margin-top:2rem">生徒データ（CSV読み込み）</h2>
+    <div class="csv-section">
+      <div class="csv-format">
+        <p class="hint">CSVフォーマット: <code>出席番号,名前</code>（1行目はヘッダー行として読み飛ばします）</p>
+      </div>
+      <div class="csv-controls">
+        <select id="csv-class-select" class="select-sm"></select>
+        <label class="btn-secondary file-label">
+          CSVを選択
+          <input type="file" id="csv-input" accept=".csv" style="display:none">
+        </label>
+        <button class="btn-primary" id="csv-upload-btn">アップロード</button>
+      </div>
+      <div id="csv-preview"></div>
+    </div>
+  </section>
+
+  <!-- 年度セットアップビュー -->
+  <section class="view" id="view-setup">
+    <h2 class="section-title">年度セットアップ</h2>
+    <div class="setup-form">
+      <label class="form-label">
+        年度
+        <input type="number" id="setup-year" class="form-input" placeholder="例: 2026">
+      </label>
+      <label class="form-label">
+        フォルダ名（Googleドライブ）
+        <input type="text" id="setup-folder" class="form-input" value="出欠管理">
+      </label>
+      <button class="btn-primary btn-lg" id="setup-btn">スプレッドシートを作成してセットアップ</button>
+    </div>
+
+    <h2 class="section-title" style="margin-top:2rem">年度切り替え</h2>
+    <div id="years-list"></div>
+  </section>
+
+</main>
+
+<!-- 出欠ポップアップ -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup" id="popup">
+    <div class="popup-student-name" id="popup-name"></div>
+    <div class="popup-student-number" id="popup-number"></div>
+    <div class="popup-buttons">
+      <button class="popup-btn present"  data-status="出席">出席</button>
+      <button class="popup-btn absent"   data-status="欠席">欠席</button>
+      <button class="popup-btn late"     data-status="遅刻/早退">遅刻/早退</button>
+      <button class="popup-btn excused"  data-status="公欠">公欠</button>
+      <button class="popup-btn leave"    data-status="休学">休学</button>
+    </div>
+    <button class="popup-close" id="popup-close">キャンセル</button>
+  </div>
+</div>
+
+<!-- トースト通知 -->
+<div class="toast" id="toast"></div>
+
+<script>
+<?!= HtmlService.createHtmlOutputFromFile('app').getContent(); ?>
+</script>
+</body>
+</html>
