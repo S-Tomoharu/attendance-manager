@@ -6,10 +6,6 @@
   <title>授業欠課時数管理</title>
   <base target="_top">
   <style>
-/* =============================================
-   style.css - 出欠管理アプリ
-   ============================================= */
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -17,8 +13,6 @@
   --blue-lt: #eff6ff;
   --red:     #dc2626;
   --red-lt:  #fef2f2;
-  --amber:   #d97706;
-  --amber-lt:#fffbeb;
   --green:   #16a34a;
   --green-lt:#f0fdf4;
   --purple:  #7c3aed;
@@ -34,28 +28,20 @@
 
 body {
   font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif;
-  font-size: 15px;
-  color: var(--text);
-  background: var(--gray-lt);
-  min-height: 100vh;
+  font-size: 15px; color: var(--text); background: var(--gray-lt); min-height: 100vh;
 }
 
-/* ===== ヘッダー ===== */
 .header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--header-h);
-  background: var(--blue);
-  color: #fff;
+  height: var(--header-h); background: var(--blue); color: #fff;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 12px;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  padding: 0 12px; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 .header-left  { display: flex; align-items: center; gap: 10px; }
 .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .app-title    { font-size: 17px; font-weight: 600; white-space: nowrap; }
+.app-version  { font-size: 11px; color: rgba(255,255,255,.6); white-space: nowrap; }
 .icon-btn     { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-.app-version { font-size: 11px; color: rgba(255,255,255,.6); white-space: nowrap; }
 .icon-btn:hover { background: rgba(255,255,255,.2); }
 
 .select-sm {
@@ -67,19 +53,20 @@ input[type="date"].select-sm { color: #fff; }
 
 .btn-primary {
   padding: 6px 14px; background: #fff; color: var(--blue);
-  border: none; border-radius: var(--radius); font-size: 14px;
-  font-weight: 600; cursor: pointer; white-space: nowrap;
+  border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .btn-primary:hover { background: #dbeafe; }
 .btn-secondary {
   padding: 6px 14px; background: var(--gray-lt); color: var(--text);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  font-size: 14px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; cursor: pointer;
 }
 .btn-secondary:hover { background: var(--border); }
+.btn-danger {
+  padding: 6px 14px; background: var(--red-lt); color: var(--red);
+  border: 1px solid var(--red); border-radius: var(--radius); font-size: 14px; cursor: pointer;
+}
 .btn-lg { padding: 10px 24px; font-size: 15px; }
 
-/* ===== サイドメニュー ===== */
 .sidenav {
   position: fixed; top: 0; left: -260px; bottom: 0; width: 260px;
   background: #fff; z-index: 300; box-shadow: 2px 0 12px rgba(0,0,0,.12);
@@ -88,8 +75,7 @@ input[type="date"].select-sm { color: #fff; }
 .sidenav.open { left: 0; }
 .sidenav-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px; border-bottom: 1px solid var(--border);
-  font-weight: 600; font-size: 16px;
+  padding: 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 16px;
 }
 .sidenav-header .icon-btn { color: var(--text); }
 .sidenav-list { list-style: none; padding: 8px 0; }
@@ -105,12 +91,10 @@ input[type="date"].select-sm { color: #fff; }
 }
 .overlay.show { display: block; }
 
-/* ===== メイン ===== */
 .main { margin-top: var(--header-h); padding: 16px; max-width: 960px; margin-left: auto; margin-right: auto; }
 .view { display: none; }
 .view.active { display: block; }
 
-/* ===== 座席マップ ===== */
 .view-toolbar {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
@@ -121,10 +105,8 @@ input[type="date"].select-sm { color: #fff; }
 }
 .legend-item.present  { background: var(--green-lt);  color: var(--green); }
 .legend-item.absent   { background: var(--red-lt);    color: var(--red); }
-.legend-item.late     { background: var(--amber-lt);  color: var(--amber); }
 .legend-item.excused  { background: var(--blue-lt);   color: var(--blue); }
-.legend-item.leave    { background: var(--purple-lt); color: var(--purple); }
-
+.legend-item.leave    { background: #f3f4f6; color: #6b7280; }
 .absent-count { font-size: 14px; color: var(--text-sm); font-weight: 500; }
 
 .blackboard {
@@ -133,47 +115,32 @@ input[type="date"].select-sm { color: #fff; }
   font-size: 13px; letter-spacing: 4px;
 }
 
-.seat-map {
-  display: grid; gap: 6px;
-  justify-content: center;
-}
+.seat-map { display: grid; gap: 6px; justify-content: center; }
 
 .seat {
-  width: 72px; height: 64px;
-  border-radius: var(--radius);
-  border: 2px solid var(--border);
-  background: #fff;
+  width: 72px; height: 64px; border-radius: var(--radius);
+  border: 2px solid var(--border); background: #fff;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  cursor: pointer; user-select: none;
-  transition: transform .1s, box-shadow .1s;
-  font-size: 12px; text-align: center; padding: 4px;
-  position: relative;
+  cursor: pointer; user-select: none; transition: transform .1s, box-shadow .1s;
+  font-size: 12px; text-align: center; padding: 4px; position: relative;
 }
 .seat:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
 .seat.empty { background: var(--gray-lt); border-color: transparent; cursor: default; opacity: .4; }
 .seat.empty:hover { transform: none; box-shadow: none; }
 .seat .seat-number { font-size: 10px; color: var(--text-sm); margin-bottom: 2px; }
 .seat .seat-name   { font-weight: 600; font-size: 12px; line-height: 1.2; }
-.seat .seat-badge  {
-  position: absolute; top: 3px; right: 3px;
-  font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 600;
-}
+.seat .seat-badge  { position: absolute; top: 3px; right: 3px; font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 600; }
 
 .seat.present  { border-color: var(--green);  background: var(--green-lt); }
 .seat.absent   { border-color: var(--red);    background: var(--red-lt); }
-.seat.late     { border-color: var(--amber);  background: var(--amber-lt); }
 .seat.excused  { border-color: var(--blue);   background: var(--blue-lt); }
-.seat.leave    { border-color: var(--purple); background: var(--purple-lt); }
+.seat.leave-seat { border-color: #d1d5db; background: #f3f4f6; opacity: .6; }
 
-.seat.absent  .seat-badge { background: var(--red);    color: #fff; }
-.seat.late    .seat-badge { background: var(--amber);  color: #fff; }
-.seat.excused .seat-badge { background: var(--blue);   color: #fff; }
-.seat.leave   .seat-badge { background: var(--purple); color: #fff; }
+.seat.absent  .seat-badge { background: var(--red);  color: #fff; }
+.seat.excused .seat-badge { background: var(--blue); color: #fff; }
+.leave-badge               { background: #9ca3af; color: #fff; }
 
-/* ===== 出席番号ビュー ===== */
-.number-search {
-  display: flex; gap: 8px; margin-bottom: 16px;
-}
+.number-search { display: flex; gap: 8px; margin-bottom: 16px; }
 .number-search input {
   flex: 1; padding: 10px 14px; border: 1px solid var(--border);
   border-radius: var(--radius); font-size: 16px;
@@ -185,19 +152,17 @@ input[type="date"].select-sm { color: #fff; }
   border: 1px solid var(--border); cursor: pointer;
 }
 .student-row:hover { background: var(--gray-lt); }
+.student-row.on-leave { opacity: .6; }
 .student-row-left { display: flex; align-items: center; gap: 12px; }
 .student-row-num  { font-size: 13px; color: var(--text-sm); min-width: 30px; }
 .student-row-name { font-weight: 600; }
-.status-badge {
-  font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 500;
-}
+
+.status-badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
 .status-badge.present  { background: var(--green-lt);  color: var(--green); }
 .status-badge.absent   { background: var(--red-lt);    color: var(--red); }
-.status-badge.late     { background: var(--amber-lt);  color: var(--amber); }
 .status-badge.excused  { background: var(--blue-lt);   color: var(--blue); }
-.status-badge.leave    { background: var(--purple-lt); color: var(--purple); }
+.status-badge.leave    { background: #f3f4f6; color: #6b7280; }
 
-/* ===== 履歴ビュー ===== */
 .history-filter { display: flex; gap: 8px; margin-bottom: 16px; }
 .history-table-wrap { overflow-x: auto; }
 .history-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; }
@@ -205,17 +170,12 @@ input[type="date"].select-sm { color: #fff; }
 .history-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
 .history-table tr:last-child td { border-bottom: none; }
 
-/* ===== 設定ビュー ===== */
 .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--blue); }
-.settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .settings-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; }
 .settings-card h3 { font-size: 15px; margin-bottom: 12px; }
 .settings-card label { display: block; font-size: 13px; color: var(--text-sm); margin-bottom: 4px; }
-.settings-card input[type="number"],
-.settings-card input[type="text"] {
-  width: 100%; padding: 7px 10px; border: 1px solid var(--border);
-  border-radius: 6px; font-size: 14px; margin-bottom: 10px;
-}
+.settings-card input[type="number"] { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
 .settings-actions { margin-top: 12px; }
 
 .csv-section { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; }
@@ -224,7 +184,11 @@ input[type="date"].select-sm { color: #fff; }
 .file-label { cursor: pointer; }
 #csv-preview { font-size: 13px; color: var(--text-sm); }
 
-/* ===== セットアップビュー ===== */
+.summary-section { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.summary-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.summary-row label { font-size: 14px; font-weight: 500; }
+.summary-row input[type="date"] { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+
 .setup-form { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .form-label { font-size: 14px; font-weight: 500; display: flex; flex-direction: column; gap: 4px; }
 .form-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
@@ -233,20 +197,16 @@ input[type="date"].select-sm { color: #fff; }
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
   padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
 }
-.year-row.active-year { border-color: var(--blue); background: var(--blue-lt); }
 
-/* ===== ポップアップ ===== */
 .popup-overlay {
   display: none; position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,.5);
-  align-items: center; justify-content: center;
+  background: rgba(0,0,0,.5); align-items: center; justify-content: center;
 }
 .popup-overlay.show { display: flex; }
 .popup {
   background: #fff; border-radius: 16px; padding: 24px;
   min-width: 280px; max-width: 340px; width: 90%;
-  box-shadow: 0 8px 32px rgba(0,0,0,.2);
-  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2); text-align: center;
 }
 .popup-student-name   { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
 .popup-student-number { font-size: 14px; color: var(--text-sm); margin-bottom: 20px; }
@@ -256,14 +216,16 @@ input[type="date"].select-sm { color: #fff; }
   font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s;
 }
 .popup-btn:hover { opacity: .85; }
-.popup-btn.present  { grid-column: 1/-1; background: var(--green);  color: #fff; }
-.popup-btn.absent   { background: var(--red);    color: #fff; }
-.popup-btn.late     { background: var(--amber);  color: #fff; }
-.popup-btn.excused  { background: var(--blue);   color: #fff; }
-.popup-btn.leave    { background: var(--purple); color: #fff; }
+.popup-btn.present { grid-column: 1/-1; background: var(--green); color: #fff; }
+.popup-btn.absent  { background: var(--red);  color: #fff; }
+.popup-btn.excused { grid-column: 1/-1; background: var(--blue); color: #fff; }
 .popup-close { background: none; border: none; color: var(--text-sm); font-size: 14px; cursor: pointer; padding: 4px 12px; }
 
-/* ===== トースト ===== */
+.leave-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.leave-form label { font-size: 14px; font-weight: 500; display: flex; flex-direction: column; gap: 4px; }
+.leave-form input[type="date"] { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+.leave-buttons { display: flex; gap: 8px; justify-content: center; }
+
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
   background: #1f2937; color: #fff; padding: 10px 20px; border-radius: 24px;
@@ -272,7 +234,6 @@ input[type="date"].select-sm { color: #fff; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ===== レスポンシブ ===== */
 @media (max-width: 600px) {
   .header-right { gap: 6px; }
   .select-sm { font-size: 13px; padding: 3px 6px; }
@@ -284,7 +245,6 @@ input[type="date"].select-sm { color: #fff; }
 </head>
 <body>
 
-<!-- ヘッダー -->
 <header class="header">
   <div class="header-left">
     <button class="icon-btn" id="menu-btn" aria-label="メニュー">☰</button>
@@ -306,7 +266,6 @@ input[type="date"].select-sm { color: #fff; }
   </div>
 </header>
 
-<!-- サイドメニュー -->
 <nav class="sidenav" id="sidenav">
   <div class="sidenav-header">
     <span>メニュー</span>
@@ -316,23 +275,22 @@ input[type="date"].select-sm { color: #fff; }
     <li><a href="#" class="sidenav-item active" data-view="seat">座席マップ</a></li>
     <li><a href="#" class="sidenav-item" data-view="number">出席番号</a></li>
     <li><a href="#" class="sidenav-item" data-view="history">出欠履歴</a></li>
+    <li><a href="#" class="sidenav-item" data-view="summary">集計・出力</a></li>
     <li><a href="#" class="sidenav-item" data-view="settings">設定</a></li>
     <li><a href="#" class="sidenav-item" data-view="setup">年度セットアップ</a></li>
   </ul>
 </nav>
 <div class="overlay" id="overlay"></div>
 
-<!-- メインコンテンツ -->
 <main class="main">
 
-  <!-- 座席マップビュー -->
+  <!-- 座席マップ -->
   <section class="view active" id="view-seat">
     <div class="view-toolbar">
       <div class="legend">
         <span class="legend-item present">出席</span>
         <span class="legend-item absent">欠席</span>
-        <span class="legend-item late">遅刻/早退</span>
-        <span class="legend-item excused">公欠</span>
+        <span class="legend-item excused">公欠・出校停止</span>
         <span class="legend-item leave">休学</span>
       </div>
       <div class="absent-count">欠席等: <span id="absent-count">0</span>人</div>
@@ -341,7 +299,7 @@ input[type="date"].select-sm { color: #fff; }
     <div class="seat-map" id="seat-map"></div>
   </section>
 
-  <!-- 出席番号ビュー -->
+  <!-- 出席番号 -->
   <section class="view" id="view-number">
     <div class="number-search">
       <input type="number" id="number-input" placeholder="出席番号を入力" min="1" max="99">
@@ -350,23 +308,39 @@ input[type="date"].select-sm { color: #fff; }
     <div class="student-list" id="student-list"></div>
   </section>
 
-  <!-- 出欠履歴ビュー -->
+  <!-- 出欠履歴 -->
   <section class="view" id="view-history">
     <div class="history-filter">
       <input type="date" id="history-date">
       <button class="btn-secondary" id="history-load-btn">読み込む</button>
     </div>
     <div class="history-table-wrap">
-      <table class="history-table" id="history-table">
-        <thead>
-          <tr><th>日付</th><th>時限</th><th>出席番号</th><th>名前</th><th>状態</th></tr>
-        </thead>
+      <table class="history-table">
+        <thead><tr><th>日付</th><th>時限</th><th>出席番号</th><th>名前</th><th>状態</th></tr></thead>
         <tbody id="history-tbody"></tbody>
       </table>
     </div>
   </section>
 
-  <!-- 設定ビュー -->
+  <!-- 集計・出力 -->
+  <section class="view" id="view-summary">
+    <h2 class="section-title">欠課集計・CSV出力</h2>
+    <div class="summary-section">
+      <div class="summary-row">
+        <label>クラス</label>
+        <select id="summary-class-select" class="select-sm" style="color:var(--text);background:#fff;border:1px solid var(--border);"></select>
+      </div>
+      <div class="summary-row">
+        <label>開始日</label>
+        <input type="date" id="summary-start">
+        <label>終了日</label>
+        <input type="date" id="summary-end">
+      </div>
+      <button class="btn-primary btn-lg" id="summary-btn" style="background:var(--blue);color:#fff;">集計してCSVダウンロード</button>
+    </div>
+  </section>
+
+  <!-- 設定 -->
   <section class="view" id="view-settings">
     <h2 class="section-title">クラス設定</h2>
     <div class="settings-grid" id="settings-grid"></div>
@@ -376,11 +350,9 @@ input[type="date"].select-sm { color: #fff; }
 
     <h2 class="section-title" style="margin-top:2rem">生徒データ（CSV読み込み）</h2>
     <div class="csv-section">
-      <div class="csv-format">
-        <p class="hint">CSVフォーマット: <code>出席番号,名前</code>（1行目はヘッダー行として読み飛ばします）</p>
-      </div>
+      <p class="hint">CSVフォーマット: <code>クラス,出席番号,名前,座席行,座席列</code>（1行目はヘッダー）</p>
       <div class="csv-controls">
-        <select id="csv-class-select" class="select-sm"></select>
+        <select id="csv-class-select" class="select-sm" style="color:var(--text);background:#fff;border:1px solid var(--border);"></select>
         <label class="btn-secondary file-label">
           CSVを選択
           <input type="file" id="csv-input" accept=".csv" style="display:none">
@@ -391,7 +363,7 @@ input[type="date"].select-sm { color: #fff; }
     </div>
   </section>
 
-  <!-- 年度セットアップビュー -->
+  <!-- 年度セットアップ -->
   <section class="view" id="view-setup">
     <h2 class="section-title">年度セットアップ</h2>
     <div class="setup-form">
@@ -405,7 +377,6 @@ input[type="date"].select-sm { color: #fff; }
       </label>
       <button class="btn-primary btn-lg" id="setup-btn">スプレッドシートを作成してセットアップ</button>
     </div>
-
     <h2 class="section-title" style="margin-top:2rem">年度切り替え</h2>
     <div id="years-list"></div>
   </section>
@@ -414,92 +385,69 @@ input[type="date"].select-sm { color: #fff; }
 
 <!-- 出欠ポップアップ -->
 <div class="popup-overlay" id="popup-overlay">
-  <div class="popup" id="popup">
+  <div class="popup">
     <div class="popup-student-name" id="popup-name"></div>
     <div class="popup-student-number" id="popup-number"></div>
     <div class="popup-buttons">
-      <button class="popup-btn present"  data-status="出席">出席</button>
-      <button class="popup-btn absent"   data-status="欠席">欠席</button>
-      <button class="popup-btn late"     data-status="遅刻/早退">遅刻/早退</button>
-      <button class="popup-btn excused"  data-status="公欠">公欠</button>
-      <button class="popup-btn leave"    data-status="休学">休学</button>
+      <button class="popup-btn present" data-status="出席">出席</button>
+      <button class="popup-btn absent"  data-status="欠席">欠席</button>
+      <button class="popup-btn excused" data-status="公欠・出校停止">公欠・出校停止</button>
     </div>
     <button class="popup-close" id="popup-close">キャンセル</button>
   </div>
 </div>
 
-<!-- トースト通知 -->
+<!-- 休学設定ポップアップ -->
+<div class="popup-overlay" id="leave-overlay">
+  <div class="popup">
+    <div class="popup-student-name" id="leave-name"></div>
+    <div class="popup-student-number" id="leave-number"></div>
+    <div class="leave-form">
+      <label>休学開始日<input type="date" id="leave-start"></label>
+      <label>休学終了日<input type="date" id="leave-end"></label>
+    </div>
+    <div class="leave-buttons">
+      <button class="btn-primary" id="leave-save-btn">保存</button>
+      <button class="btn-danger"  id="leave-clear-btn">クリア</button>
+    </div>
+    <br>
+    <button class="popup-close" onclick="closeLeavePopup()">キャンセル</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
 <script>
 // =============================================
-// app.js - 出欠管理アプリ メインロジック（GAS版）
+// app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-// ===== バージョン =====
 const VERSION = '00000000-000';
 
-// ===== 状態 =====
 const STATE = {
-  className:  '',
-  attendance: {},
-  students:   [],
-  settings:   [],
+  className:      '',
+  attendance:     {},
+  students:       [],
+  settings:       [],
   currentStudent: null,
 };
 
 const STATUS_CLASS = {
-  '出席':     'present',
-  '欠席':     'absent',
-  '遅刻/早退': 'late',
-  '公欠':     'excused',
-  '休学':     'leave',
+  '出席':        'present',
+  '欠席':        'absent',
+  '公欠・出校停止': 'excused',
+  '休学':        'leave',
 };
 
 const STATUS_BADGE = {
-  '欠席':     '欠',
-  '遅刻/早退': '遅',
-  '公欠':     '公',
-  '休学':     '休',
+  '欠席':        '欠',
+  '公欠・出校停止': '公',
+  '休学':        '休',
 };
 
-// ===== DOM =====
 const $ = id => document.getElementById(id);
 
-const els = {
-  menuBtn:        $('menu-btn'),
-  closeMenuBtn:   $('close-menu-btn'),
-  sidenav:        $('sidenav'),
-  overlay:        $('overlay'),
-  classSelect:    $('class-select'),
-  periodSelect:   $('period-select'),
-  dateInput:      $('date-input'),
-  saveBtn:        $('save-btn'),
-  seatMap:        $('seat-map'),
-  absentCount:    $('absent-count'),
-  popupOverlay:   $('popup-overlay'),
-  popupName:      $('popup-name'),
-  popupNumber:    $('popup-number'),
-  popupClose:     $('popup-close'),
-  toast:          $('toast'),
-  numberInput:    $('number-input'),
-  numberSearchBtn:$('number-search-btn'),
-  studentList:    $('student-list'),
-  historyDate:    $('history-date'),
-  historyLoadBtn: $('history-load-btn'),
-  historyTbody:   $('history-tbody'),
-  settingsGrid:   $('settings-grid'),
-  saveSettingsBtn:$('save-settings-btn'),
-  csvClassSelect: $('csv-class-select'),
-  csvInput:       $('csv-input'),
-  csvUploadBtn:   $('csv-upload-btn'),
-  csvPreview:     $('csv-preview'),
-  setupYear:      $('setup-year'),
-  setupFolder:    $('setup-folder'),
-  setupBtn:       $('setup-btn'),
-  yearsList:      $('years-list'),
-};
-
-// ===== GAS API呼び出しヘルパー =====
+// ===== GAS API =====
 function gasCall(funcName, params) {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -512,12 +460,14 @@ function gasCall(funcName, params) {
 // ===== 初期化 =====
 function init() {
   const today = new Date().toISOString().split('T')[0];
-  els.dateInput.value = today;
-  els.historyDate.value = today;
-  els.setupYear.value = new Date().getFullYear();
+  $('date-input').value = today;
+  $('history-date').value = today;
+  $('setup-year').value = new Date().getFullYear();
+  $('summary-start').value = today.slice(0, 7) + '-01';
+  $('summary-end').value = today;
 
-  const versionEl = $('app-version');
-  if (versionEl) versionEl.textContent = 'v' + VERSION;
+  const vEl = $('app-version');
+  if (vEl) vEl.textContent = 'v' + VERSION;
 
   setupEventListeners();
   loadInitialData();
@@ -525,14 +475,15 @@ function init() {
 
 async function loadInitialData() {
   try {
-    const [settingsRes, studentsRes] = await Promise.all([
+    const [sr, st] = await Promise.all([
       gasCall('clientGetSettings', {}),
       gasCall('clientGetStudents', {}),
     ]);
-    STATE.settings = settingsRes.settings || [];
-    STATE.students = studentsRes.students || [];
+    STATE.settings = sr.settings || [];
+    STATE.students = st.students || [];
     updateClassSelects();
     renderSettingsGrid();
+    if (STATE.className) loadAttendance();
     renderSeatMap();
     renderStudentList();
   } catch (e) {
@@ -542,9 +493,9 @@ async function loadInitialData() {
 
 // ===== イベント =====
 function setupEventListeners() {
-  els.menuBtn.addEventListener('click', () => openMenu());
-  els.closeMenuBtn.addEventListener('click', () => closeMenu());
-  els.overlay.addEventListener('click', () => closeMenu());
+  $('menu-btn').addEventListener('click', openMenu);
+  $('close-menu-btn').addEventListener('click', closeMenu);
+  $('overlay').addEventListener('click', closeMenu);
 
   document.querySelectorAll('.sidenav-item').forEach(item => {
     item.addEventListener('click', e => {
@@ -554,18 +505,18 @@ function setupEventListeners() {
     });
   });
 
-  els.classSelect.addEventListener('change', () => {
-    STATE.className = els.classSelect.value;
+  $('class-select').addEventListener('change', () => {
+    STATE.className = $('class-select').value;
     loadAttendance();
     renderSeatMap();
     renderStudentList();
   });
-  els.periodSelect.addEventListener('change', loadAttendance);
-  els.dateInput.addEventListener('change', loadAttendance);
-  els.saveBtn.addEventListener('click', saveAttendance);
+  $('period-select').addEventListener('change', loadAttendance);
+  $('date-input').addEventListener('change', loadAttendance);
+  $('save-btn').addEventListener('click', saveAttendance);
 
-  els.popupClose.addEventListener('click', closePopup);
-  els.popupOverlay.addEventListener('click', e => { if (e.target === els.popupOverlay) closePopup(); });
+  $('popup-close').addEventListener('click', closePopup);
+  $('popup-overlay').addEventListener('click', e => { if (e.target === $('popup-overlay')) closePopup(); });
   document.querySelectorAll('.popup-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       setStatus(STATE.currentStudent, btn.dataset.status);
@@ -573,40 +524,46 @@ function setupEventListeners() {
     });
   });
 
-  els.numberSearchBtn.addEventListener('click', () => filterStudentList(els.numberInput.value));
-  els.numberInput.addEventListener('keydown', e => { if (e.key === 'Enter') filterStudentList(els.numberInput.value); });
-  els.numberInput.addEventListener('input', () => filterStudentList(els.numberInput.value));
+  $('leave-save-btn').addEventListener('click', saveLeaveperiod);
+  $('leave-clear-btn').addEventListener('click', clearLeaveperiod);
 
-  els.historyLoadBtn.addEventListener('click', loadHistory);
-  els.saveSettingsBtn.addEventListener('click', saveSettings);
-  els.csvInput.addEventListener('change', previewCSV);
-  els.csvUploadBtn.addEventListener('click', uploadCSV);
-  els.setupBtn.addEventListener('click', runSetup);
+  $('number-search-btn').addEventListener('click', () => filterStudentList($('number-input').value));
+  $('number-input').addEventListener('input', () => filterStudentList($('number-input').value));
+  $('number-input').addEventListener('keydown', e => { if (e.key === 'Enter') filterStudentList($('number-input').value); });
+
+  $('history-load-btn').addEventListener('click', loadHistory);
+  $('save-settings-btn').addEventListener('click', saveSettings);
+  $('csv-input').addEventListener('change', previewCSV);
+  $('csv-upload-btn').addEventListener('click', uploadCSV);
+  $('setup-btn').addEventListener('click', runSetup);
+  $('summary-btn').addEventListener('click', downloadSummary);
 }
 
 // ===== メニュー =====
-function openMenu()  { els.sidenav.classList.add('open'); els.overlay.classList.add('show'); }
-function closeMenu() { els.sidenav.classList.remove('open'); els.overlay.classList.remove('show'); }
+function openMenu()  { $('sidenav').classList.add('open'); $('overlay').classList.add('show'); }
+function closeMenu() { $('sidenav').classList.remove('open'); $('overlay').classList.remove('show'); }
 
 // ===== ビュー切り替え =====
-function switchView(viewName) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.sidenav-item').forEach(i => i.classList.remove('active'));
-  $('view-' + viewName).classList.add('active');
-  document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
-  if (viewName === 'seat')   renderSeatMap();
-  if (viewName === 'number') renderStudentList();
-  if (viewName === 'setup')  loadYears();
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
+  $('view-' + v).classList.add('active');
+  document.querySelector(`[data-view="${v}"]`).classList.add('active');
+  if (v === 'seat')    renderSeatMap();
+  if (v === 'number')  renderStudentList();
+  if (v === 'setup')   loadYears();
 }
 
-// ===== クラス選択肢の更新 =====
+// ===== クラス選択肢 =====
 function updateClassSelects() {
   const classes = [...new Set(STATE.settings.map(s => s.className))];
-  [els.classSelect, els.csvClassSelect].forEach(sel => {
+  ['class-select', 'csv-class-select', 'summary-class-select'].forEach(id => {
+    const sel = $(id);
+    if (!sel) return;
     sel.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
   });
   if (!STATE.className && classes.length > 0) STATE.className = classes[0];
-  els.classSelect.value = STATE.className;
+  $('class-select').value = STATE.className;
 }
 
 // ===== 出欠読み込み =====
@@ -614,20 +571,16 @@ async function loadAttendance() {
   if (!STATE.className) return;
   try {
     const res = await gasCall('clientGetAttendance', {
-      date:      els.dateInput.value,
-      period:    els.periodSelect.value,
+      date: $('date-input').value,
+      period: $('period-select').value,
       className: STATE.className,
     });
     STATE.attendance = {};
-    (res.records || []).forEach(r => {
-      STATE.attendance[r.number] = r.status;
-    });
+    (res.records || []).forEach(r => { STATE.attendance[r.number] = r.status; });
     renderSeatMap();
     renderStudentList();
     updateAbsentCount();
-  } catch (e) {
-    console.error(e);
-  }
+  } catch (e) { console.error(e); }
 }
 
 // ===== 出欠保存 =====
@@ -639,10 +592,10 @@ async function saveAttendance() {
     status: STATE.attendance[s.number] || '出席',
   }));
   try {
-    els.saveBtn.textContent = '保存中...';
+    $('save-btn').textContent = '保存中...';
     await gasCall('clientSaveAttendance', {
-      date:      els.dateInput.value,
-      period:    els.periodSelect.value,
+      date:      $('date-input').value,
+      period:    $('period-select').value,
       className: STATE.className,
       records,
     });
@@ -650,7 +603,7 @@ async function saveAttendance() {
   } catch (e) {
     showToast('保存失敗: ' + e.message);
   } finally {
-    els.saveBtn.textContent = '保存';
+    $('save-btn').textContent = '保存';
   }
 }
 
@@ -666,148 +619,215 @@ function setStatus(student, status) {
   updateAbsentCount();
 }
 
+// ===== 休学期間判定 =====
+function isOnLeave(student, dateStr) {
+  if (!student.leaveStart || !student.leaveEnd) return false;
+  return dateStr >= student.leaveStart && dateStr <= student.leaveEnd;
+}
+
 // ===== 座席マップ描画 =====
 function renderSeatMap() {
   const setting = STATE.settings.find(s => s.className === STATE.className);
-  if (!setting) { els.seatMap.innerHTML = '<p style="color:#888;padding:20px">設定がありません</p>'; return; }
+  if (!setting) {
+    $('seat-map').innerHTML = '<p style="color:#888;padding:20px">設定がありません</p>';
+    return;
+  }
 
-  const { rows, cols, emptySeats } = setting;
-  els.seatMap.style.gridTemplateColumns = `repeat(${cols}, 72px)`;
+  const { rows, cols } = setting;
+  $('seat-map').style.gridTemplateColumns = `repeat(${cols}, 72px)`;
 
+  const today = $('date-input').value;
   const classStudents = STATE.students.filter(s => s.className === STATE.className);
   const seatMap = {};
-  classStudents.forEach(s => { seatMap[`${s.seatRow}-${s.seatCol}`] = s; });
+  classStudents.forEach(s => {
+    if (s.seatRow && s.seatCol) seatMap[`${s.seatRow}-${s.seatCol}`] = s;
+  });
 
   let html = '';
   for (let r = 1; r <= rows; r++) {
     for (let c = 1; c <= cols; c++) {
-      const key = `${r}-${c}`;
-      const isEmpty = emptySeats.includes(key);
-      const student = seatMap[key];
-
-      if (isEmpty || !student) {
+      const student = seatMap[`${r}-${c}`];
+      if (!student) {
         html += `<div class="seat empty"></div>`;
+        continue;
+      }
+
+      const onLeave = isOnLeave(student, today);
+      if (onLeave) {
+        html += `<div class="seat leave-seat" data-number="${student.number}">
+          <span class="seat-number">${student.number}番</span>
+          <span class="seat-name">${student.name}</span>
+          <span class="seat-badge leave-badge">休</span>
+        </div>`;
         continue;
       }
 
       const status = STATE.attendance[student.number] || '出席';
       const cls    = STATUS_CLASS[status] || 'present';
       const badge  = STATUS_BADGE[status] || '';
-      html += `
-        <div class="seat ${cls}" data-number="${student.number}">
-          <span class="seat-number">${student.number}番</span>
-          <span class="seat-name">${student.name}</span>
-          ${badge ? `<span class="seat-badge">${badge}</span>` : ''}
-        </div>`;
+      html += `<div class="seat ${cls}" data-number="${student.number}">
+        <span class="seat-number">${student.number}番</span>
+        <span class="seat-name">${student.name}</span>
+        ${badge ? `<span class="seat-badge">${badge}</span>` : ''}
+      </div>`;
     }
   }
-  els.seatMap.innerHTML = html;
+  $('seat-map').innerHTML = html;
 
-  els.seatMap.querySelectorAll('.seat:not(.empty)').forEach(el => {
+  $('seat-map').querySelectorAll('.seat:not(.empty):not(.leave-seat)').forEach(el => {
     el.addEventListener('click', () => {
-      const num = el.dataset.number;
-      const student = classStudents.find(s => String(s.number) === String(num));
+      const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
       if (student) openPopup(student);
+    });
+  });
+
+  $('seat-map').querySelectorAll('.leave-seat').forEach(el => {
+    el.addEventListener('click', () => {
+      const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
+      if (student) openLeavePopup(student);
     });
   });
 }
 
 // ===== 生徒リスト描画 =====
 function renderStudentList(filter = '') {
+  const today = $('date-input').value;
   const classStudents = STATE.students
     .filter(s => s.className === STATE.className)
     .filter(s => !filter || String(s.number).startsWith(filter) || s.name.includes(filter))
     .sort((a, b) => Number(a.number) - Number(b.number));
 
-  els.studentList.innerHTML = classStudents.map(s => {
-    const status = STATE.attendance[s.number] || '出席';
-    const cls    = STATUS_CLASS[status] || 'present';
-    return `
-      <div class="student-row" data-number="${s.number}">
-        <div class="student-row-left">
-          <span class="student-row-num">${s.number}番</span>
-          <span class="student-row-name">${s.name}</span>
-        </div>
-        <span class="status-badge ${cls}">${status}</span>
-      </div>`;
+  $('student-list').innerHTML = classStudents.map(s => {
+    const onLeave = isOnLeave(s, today);
+    const status  = onLeave ? '休学' : (STATE.attendance[s.number] || '出席');
+    const cls     = STATUS_CLASS[status] || 'present';
+    return `<div class="student-row ${onLeave ? 'on-leave' : ''}" data-number="${s.number}">
+      <div class="student-row-left">
+        <span class="student-row-num">${s.number}番</span>
+        <span class="student-row-name">${s.name}</span>
+      </div>
+      <span class="status-badge ${cls}">${status}</span>
+    </div>`;
   }).join('');
 
-  els.studentList.querySelectorAll('.student-row').forEach(el => {
+  $('student-list').querySelectorAll('.student-row').forEach(el => {
     el.addEventListener('click', () => {
-      const num = el.dataset.number;
-      const student = classStudents.find(s => String(s.number) === String(num));
-      if (student) openPopup(student);
+      const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
+      if (!student) return;
+      if (el.classList.contains('on-leave')) {
+        openLeavePopup(student);
+      } else {
+        openPopup(student);
+      }
     });
   });
 }
 
 function filterStudentList(val) { renderStudentList(val.trim()); }
 
-// ===== 欠席カウント =====
 function updateAbsentCount() {
   const count = Object.values(STATE.attendance).filter(s => s !== '出席').length;
-  els.absentCount.textContent = count;
+  $('absent-count').textContent = count;
 }
 
-// ===== ポップアップ =====
+// ===== 出欠ポップアップ =====
 function openPopup(student) {
   STATE.currentStudent = student;
-  els.popupName.textContent   = student.name;
-  els.popupNumber.textContent = `${STATE.className} ${student.number}番`;
+  $('popup-name').textContent   = student.name;
+  $('popup-number').textContent = `${STATE.className} ${student.number}番`;
   const current = STATE.attendance[student.number] || '出席';
   document.querySelectorAll('.popup-btn').forEach(btn => {
     btn.style.opacity = btn.dataset.status === current ? '1' : '0.7';
     btn.style.outline = btn.dataset.status === current ? '3px solid #111' : 'none';
   });
-  els.popupOverlay.classList.add('show');
+  $('popup-overlay').classList.add('show');
 }
-function closePopup() { els.popupOverlay.classList.remove('show'); STATE.currentStudent = null; }
+function closePopup() { $('popup-overlay').classList.remove('show'); STATE.currentStudent = null; }
+
+// ===== 休学設定ポップアップ =====
+function openLeavePopup(student) {
+  STATE.currentStudent = student;
+  $('leave-name').textContent   = student.name;
+  $('leave-number').textContent = `${STATE.className} ${student.number}番`;
+  $('leave-start').value = student.leaveStart || '';
+  $('leave-end').value   = student.leaveEnd   || '';
+  $('leave-overlay').classList.add('show');
+}
+function closeLeavePopup() { $('leave-overlay').classList.remove('show'); STATE.currentStudent = null; }
+
+async function saveLeaveperiod() {
+  const student = STATE.currentStudent;
+  const leaveStart = $('leave-start').value;
+  const leaveEnd   = $('leave-end').value;
+  try {
+    await gasCall('clientSaveLeaveperiod', {
+      className:  STATE.className,
+      number:     student.number,
+      leaveStart, leaveEnd,
+    });
+    student.leaveStart = leaveStart;
+    student.leaveEnd   = leaveEnd;
+    showToast('休学期間を保存しました ✓');
+    closeLeavePopup();
+    renderSeatMap();
+    renderStudentList();
+  } catch (e) {
+    showToast('保存失敗: ' + e.message);
+  }
+}
+
+async function clearLeaveperiod() {
+  const student = STATE.currentStudent;
+  try {
+    await gasCall('clientSaveLeaveperiod', {
+      className:  STATE.className,
+      number:     student.number,
+      leaveStart: '',
+      leaveEnd:   '',
+    });
+    student.leaveStart = '';
+    student.leaveEnd   = '';
+    showToast('休学期間をクリアしました ✓');
+    closeLeavePopup();
+    renderSeatMap();
+    renderStudentList();
+  } catch (e) {
+    showToast('クリア失敗: ' + e.message);
+  }
+}
 
 // ===== 履歴 =====
 async function loadHistory() {
   try {
     const res = await gasCall('clientGetAttendance', {
-      date:      els.historyDate.value,
+      date:      $('history-date').value,
       className: STATE.className,
     });
     const records = res.records || [];
-    els.historyTbody.innerHTML = records.length === 0
+    $('history-tbody').innerHTML = records.length === 0
       ? '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">記録なし</td></tr>'
-      : records.map(r => `
-          <tr>
-            <td>${r.date}</td>
-            <td>${r.period}限</td>
-            <td>${r.number}番</td>
-            <td>${r.name}</td>
-            <td><span class="status-badge ${STATUS_CLASS[r.status]}">${r.status}</span></td>
-          </tr>`).join('');
-  } catch (e) {
-    showToast('履歴読み込み失敗: ' + e.message);
-  }
+      : records.map(r => `<tr>
+          <td>${r.date}</td><td>${r.period}限</td>
+          <td>${r.number}番</td><td>${r.name}</td>
+          <td><span class="status-badge ${STATUS_CLASS[r.status]}">${r.status}</span></td>
+        </tr>`).join('');
+  } catch (e) { showToast('履歴読み込み失敗: ' + e.message); }
 }
 
 // ===== 設定 =====
 function renderSettingsGrid() {
-  els.settingsGrid.innerHTML = STATE.settings.map((s, i) => `
+  $('settings-grid').innerHTML = STATE.settings.map((s, i) => `
     <div class="settings-card">
       <h3>${s.className}</h3>
       <label>行数</label>
       <input type="number" data-idx="${i}" data-field="rows" value="${s.rows}" min="1" max="20">
       <label>列数</label>
       <input type="number" data-idx="${i}" data-field="cols" value="${s.cols}" min="1" max="20">
-      <label>空席（行-列 をカンマ区切り）</label>
-      <input type="text" data-idx="${i}" data-field="emptySeats" value="${s.emptySeats.join(',')}">
     </div>`).join('');
 
-  els.settingsGrid.querySelectorAll('input').forEach(input => {
+  $('settings-grid').querySelectorAll('input').forEach(input => {
     input.addEventListener('change', () => {
-      const idx   = input.dataset.idx;
-      const field = input.dataset.field;
-      if (field === 'emptySeats') {
-        STATE.settings[idx].emptySeats = input.value.split(',').map(s => s.trim()).filter(Boolean);
-      } else {
-        STATE.settings[idx][field] = Number(input.value);
-      }
+      STATE.settings[input.dataset.idx][input.dataset.field] = Number(input.value);
     });
   });
 }
@@ -817,78 +837,78 @@ async function saveSettings() {
     await gasCall('clientSaveSettings', { settings: STATE.settings });
     showToast('設定を保存しました ✓');
     renderSeatMap();
-  } catch (e) {
-    showToast('設定保存失敗: ' + e.message);
-  }
+  } catch (e) { showToast('設定保存失敗: ' + e.message); }
 }
 
-// ===== CSV =====
+// ===== CSV読み込み =====
 let csvData = [];
 function previewCSV() {
-  const file = els.csvInput.files[0];
+  const file = $('csv-input').files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     const lines = e.target.result.split('\n').filter(l => l.trim());
     csvData = lines.slice(1).map(line => {
       const parts = line.split(',');
-      return { number: parts[0]?.trim(), name: parts[1]?.trim() };
-    }).filter(s => s.number && s.name);
-    els.csvPreview.textContent = `${csvData.length}人 読み込み予定`;
+      return {
+        className: parts[0]?.trim(),
+        number:    parts[1]?.trim(),
+        name:      parts[2]?.trim(),
+        seatRow:   parts[3]?.trim() || '',
+        seatCol:   parts[4]?.trim() || '',
+      };
+    }).filter(s => s.className && s.number && s.name);
+    $('csv-preview').textContent = `${csvData.length}人 読み込み予定`;
   };
   reader.readAsText(file, 'UTF-8');
 }
 
 async function uploadCSV() {
   if (csvData.length === 0) { showToast('CSVを選択してください'); return; }
-  const className = els.csvClassSelect.value;
+  const className = $('csv-class-select').value;
+  const classData = csvData.filter(s => s.className === className);
+  if (classData.length === 0) { showToast(`${className}のデータがCSVにありません`); return; }
   try {
-    await gasCall('clientSaveStudents', { className, students: csvData });
+    await gasCall('clientSaveStudents', { className, students: classData });
     STATE.students = STATE.students.filter(s => s.className !== className);
-    csvData.forEach(s => STATE.students.push({ ...s, className, seatRow: '', seatCol: '' }));
-    showToast(`${csvData.length}人 アップロード完了 ✓`);
+    classData.forEach(s => STATE.students.push({ ...s, leaveStart: '', leaveEnd: '' }));
+    showToast(`${classData.length}人 アップロード完了 ✓`);
     renderSeatMap();
     renderStudentList();
     csvData = [];
-    els.csvPreview.textContent = '';
-    els.csvInput.value = '';
-  } catch (e) {
-    showToast('アップロード失敗: ' + e.message);
-  }
+    $('csv-preview').textContent = '';
+    $('csv-input').value = '';
+  } catch (e) { showToast('アップロード失敗: ' + e.message); }
 }
 
 // ===== セットアップ =====
 async function runSetup() {
-  const year   = els.setupYear.value;
-  const folder = els.setupFolder.value;
+  const year   = $('setup-year').value;
+  const folder = $('setup-folder').value;
   if (!year) { showToast('年度を入力してください'); return; }
   try {
-    els.setupBtn.textContent = '作成中...';
+    $('setup-btn').textContent = '作成中...';
     const res = await gasCall('clientSetupYear', { year, folderName: folder });
     showToast(`${res.spreadsheetName} を作成しました ✓`);
     loadYears();
     loadInitialData();
-  } catch (e) {
-    showToast('セットアップ失敗: ' + e.message);
-  } finally {
-    els.setupBtn.textContent = 'スプレッドシートを作成してセットアップ';
-  }
+  } catch (e) { showToast('セットアップ失敗: ' + e.message); }
+  finally { $('setup-btn').textContent = 'スプレッドシートを作成してセットアップ'; }
 }
 
 async function loadYears() {
   try {
     const res = await gasCall('clientGetYears', {});
     const years = res.years || [];
-    els.yearsList.innerHTML = years.length === 0
+    $('years-list').innerHTML = years.length === 0
       ? '<p style="color:#888;font-size:14px">年度データなし</p>'
-      : years.map(y => `
-          <div class="year-row">
-            <div>
-              <div style="font-weight:600">${y.name}</div>
-              <div style="font-size:12px;color:#888">${y.year}年度</div>
-            </div>
-            <button class="btn-secondary" onclick="switchYear('${y.spreadsheetId}')">切り替え</button>
-          </div>`).join('');
+      : years.map(y => `<div class="year-row">
+          <div>
+            <div style="font-weight:600">${y.name}</div>
+            <div style="font-size:12px;color:#888">${y.year}年度</div>
+          </div>
+          <button class="btn-secondary" onclick="switchYear('${y.spreadsheetId}')">切り替え</button>
+        </div>`).join('');
   } catch (e) { console.error(e); }
 }
 
@@ -897,22 +917,51 @@ async function switchYear(spreadsheetId) {
     await gasCall('clientSwitchYear', { spreadsheetId });
     showToast('年度を切り替えました ✓');
     loadInitialData();
-  } catch (e) {
-    showToast('切り替え失敗: ' + e.message);
-  }
+  } catch (e) { showToast('切り替え失敗: ' + e.message); }
+}
+
+// ===== 集計・CSV出力 =====
+async function downloadSummary() {
+  const className  = $('summary-class-select').value;
+  const startDate  = $('summary-start').value;
+  const endDate    = $('summary-end').value;
+  if (!startDate || !endDate) { showToast('期間を指定してください'); return; }
+
+  try {
+    $('summary-btn').textContent = '集計中...';
+    const res = await gasCall('clientGetAttendanceSummary', { className, startDate, endDate });
+    const summary = res.summary || [];
+
+    // CSVを生成
+    const rows = [['出席番号', '名前', '授業時数', '欠課時数']];
+    summary.forEach(s => {
+      rows.push([s.number, s.name, s.lessonCount, s.absenceCount]);
+    });
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${className}_欠課集計_${startDate}_${endDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSVをダウンロードしました ✓');
+  } catch (e) { showToast('集計失敗: ' + e.message); }
+  finally { $('summary-btn').textContent = '集計してCSVダウンロード'; }
 }
 
 // ===== トースト =====
 let toastTimer;
 function showToast(msg) {
-  els.toast.textContent = msg;
-  els.toast.classList.add('show');
+  $('toast').textContent = msg;
+  $('toast').classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => els.toast.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000);
 }
 
-// ===== 起動 =====
 init();
+
 </script>
 </body>
 </html>
