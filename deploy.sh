@@ -1,14 +1,13 @@
 #!/bin/bash
 
-# デプロイスクリプト：バージョンを自動インクリメントしてpush（GAS + GitHub）
+# デプロイスクリプト：バージョン更新→ビルド→GitHub push→GAS push
 
-APP_HTML="gas/app.html"
 VERSION_FILE=".deploy_version"
+APP_SRC="gas/app.html"
 
-# 今日の日付を取得（YYYYMMDD形式）
+# ===== バージョン更新 =====
 TODAY=$(date +%Y%m%d)
 
-# バージョン記録ファイルから前回のバージョンを取得
 if [ -f "$VERSION_FILE" ]; then
   CURRENT_VERSION=$(cat "$VERSION_FILE")
 else
@@ -16,10 +15,8 @@ else
 fi
 echo "前回のバージョン: $CURRENT_VERSION"
 
-# 前回のバージョンから日付と番号を抽出
 IFS='-' read -r OLD_DATE NUM <<< "$CURRENT_VERSION"
 
-# 日付が変わってたら001にリセット、同じ日なら番号をインクリメント
 if [ "$OLD_DATE" = "$TODAY" ]; then
   NUM=$((10#${NUM} + 1))
   echo "本日の継続デプロイ: 番号を${NUM}に更新"
@@ -30,25 +27,28 @@ fi
 
 NEW_VERSION="${TODAY}-$(printf '%03d' $NUM)"
 echo "新しいバージョン: $NEW_VERSION"
-
-# バージョンを記録ファイルに保存
 echo "$NEW_VERSION" > "$VERSION_FILE"
 
 # app.htmlのVERSION定数を更新
-if [ -f "$APP_HTML" ]; then
-  sed -i.bak "s/const VERSION = '.*'/const VERSION = '$NEW_VERSION'/" "$APP_HTML"
-  rm "${APP_HTML}.bak"
-  echo "更新: $APP_HTML"
-else
-  echo "⚠️ ファイルが見つかりません: $APP_HTML"
-fi
+sed -i.bak "s/const VERSION = '.*'/const VERSION = '$NEW_VERSION'/" "$APP_SRC"
+rm "${APP_SRC}.bak"
+echo "更新: $APP_SRC (VERSION=$NEW_VERSION)"
 
-# GitHubにpush
+# ===== index.htmlをビルド =====
+echo "index.htmlをビルド中..."
+python3 build.py
+if [ $? -ne 0 ]; then
+  echo "❌ ビルド失敗"
+  exit 1
+fi
+echo "ビルド完了"
+
+# ===== GitHubにpush =====
 git add .
 git commit -m "Bump version to $NEW_VERSION"
 git push origin main
 
-# GASにpush
+# ===== GASにpush =====
 cd gas
 clasp push --force
 cd ..
