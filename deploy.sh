@@ -50,7 +50,7 @@ git push origin main
 
 # GASにpush
 cd gas
-clasp push
+clasp push --force
 cd ..
 
 echo "✅ デプロイ完了: $NEW_VERSION"
