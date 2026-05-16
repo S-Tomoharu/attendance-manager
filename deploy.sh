@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# デプロイスクリプト：バージョン更新→ビルド→GitHub push→GAS push
+# デプロイスクリプト：バージョン更新→ビルド→GitHub push→GAS push→GAS deploy
 
 VERSION_FILE=".deploy_version"
 APP_SRC="gas/app.html"
+DEPLOY_ID_FILE=".gas_deploy_id"
 
 # ===== バージョン更新 =====
 TODAY=$(date +%Y%m%d)
@@ -51,6 +52,16 @@ git push origin main
 # ===== GASにpush =====
 cd gas
 clasp push --force
+
+# ===== GASデプロイ更新 =====
+if [ -f "../$DEPLOY_ID_FILE" ]; then
+  DEPLOY_ID=$(cat "../$DEPLOY_ID_FILE")
+  clasp deploy --deploymentId "$DEPLOY_ID" --description "v$NEW_VERSION"
+  echo "GASデプロイ更新完了"
+else
+  echo "⚠️ .gas_deploy_id が見つかりません。初回は手動でデプロイしてIDを設定してください。"
+fi
+
 cd ..
 
 echo "✅ デプロイ完了: $NEW_VERSION"
