@@ -313,7 +313,7 @@ input[type="date"].select-sm { color: #fff; }
 .mini-calendar {
   background: #fff; border-radius: var(--radius);
   border: 1px solid var(--border); padding: 8px;
-  user-select: none;
+  user-select: none; width: 100%; min-width: 160px;
 }
 .cal-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -333,7 +333,7 @@ input[type="date"].select-sm { color: #fff; }
   padding: 2px 0; font-weight: 500;
 }
 .cal-day {
-  text-align: center; font-size: 12px; padding: 4px 2px;
+  text-align: center; font-size: 11px; padding: 3px 1px;
   border-radius: 4px; cursor: pointer; line-height: 1;
 }
 .cal-day:hover { background: var(--blue-lt); color: var(--blue); }
