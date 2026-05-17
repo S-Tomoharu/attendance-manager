@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-010';
+const VERSION = '20260517-011';
 
 const STATE = {
   className:      '',
@@ -190,11 +190,13 @@ function updateClassSelects() {
 async function loadAttendance() {
   if (!STATE.className) return;
   try {
-    const res = await gasCall('clientGetAttendance', {
+    const params = {
       date: $('date-input').value,
       period: $('period-select').value,
       className: STATE.className,
-    });
+    };
+    console.log('params:', JSON.stringify(params));
+    const res = await gasCall('clientGetAttendance', params);
     console.log('res:', JSON.stringify(res));
     STATE.attendance = {};
     if (res && res.records) {
