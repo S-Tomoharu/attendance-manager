@@ -25,6 +25,8 @@ function doPost(e) {
       case 'saveSettings':         return jsonResponse(saveSettings(data));
       case 'switchYear':           return jsonResponse(switchYear(data));
       case 'saveLeaveperiod':      return jsonResponse(saveLeaveperiod(data));
+      case 'addClass':             return jsonResponse(addClass(data));
+      case 'deleteClass':          return jsonResponse(deleteClass(data));
       default:
         return jsonResponse({ error: 'Unknown action: ' + action });
     }
@@ -63,3 +65,6 @@ function clientSaveAttendance(data)          { return saveAttendance(data); }
 function clientSaveSettings(data)            { return saveSettings(data); }
 function clientSwitchYear(data)              { return switchYear(data); }
 function clientSaveLeaveperiod(data)         { return saveLeaveperiod(data); }
+
+function clientAddClass(data)    { return addClass(data); }
+function clientDeleteClass(data) { return deleteClass(data); }

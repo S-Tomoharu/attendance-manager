@@ -178,3 +178,29 @@ function getAttendanceSummary(params) {
 
   return { summary, totalLessons };
 }
+
+// クラスを追加
+function addClass(data) {
+  const ss = getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('settings');
+  const existing = sheet.getDataRange().getValues();
+  const exists = existing.slice(1).some(row => row[0] === data.className);
+  if (exists) return { error: 'そのクラス名はすでに存在します' };
+  const lastRow = sheet.getLastRow();
+  sheet.getRange(lastRow + 1, 1, 1, 3).setValues([[data.className, 6, 7]]);
+  return { success: true };
+}
+
+// クラスを削除
+function deleteClass(data) {
+  const ss = getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('settings');
+  const existing = sheet.getDataRange().getValues();
+  for (let i = existing.length - 1; i >= 1; i--) {
+    if (existing[i][0] === data.className) {
+      sheet.deleteRow(i + 1);
+      return { success: true };
+    }
+  }
+  return { error: 'クラスが見つかりません' };
+}
