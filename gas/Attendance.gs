@@ -35,7 +35,7 @@ function getAttendance(params) {
       number:    row[3],
       name:      row[4],
       status:    row[5],
-      timestamp: row[6],
+      timestamp: row[6] instanceof Date ? Utilities.formatDate(row[6], 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss') : String(row[6]),
     }));
 
   return { records };
