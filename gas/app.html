@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-003';
+const VERSION = '20260517-004';
 
 const STATE = {
   className:      '',
@@ -85,6 +85,7 @@ function selectClassAndGo(className) {
   $('class-select').value = className;
   localStorage.setItem('className', className);
   switchView('seat');
+  renderCalendar();
   loadAttendance();
 }
 
@@ -109,7 +110,13 @@ function setupEventListeners() {
     renderStudentList();
   });
   $('period-select').addEventListener('change', loadAttendance);
-  $('date-input').addEventListener('change', loadAttendance);
+  $('date-input').addEventListener('change', () => {
+    const d = new Date($('date-input').value);
+    CAL.year  = d.getFullYear();
+    CAL.month = d.getMonth();
+    renderCalendar();
+    loadAttendance();
+  });
   $('save-btn').addEventListener('click', saveAttendance);
 
   $('popup-close').addEventListener('click', closePopup);
@@ -161,7 +168,7 @@ function switchView(v) {
   $('view-' + v).classList.add('active');
   const navItem = document.querySelector(`[data-view="${v}"]`);
   if (navItem) navItem.classList.add('active');
-  if (v === 'seat')        { renderSeatMap(); renderStudentList(); }
+  if (v === 'seat')        { renderSeatMap(); renderStudentList(); renderCalendar(); }
   if (v === 'number')      renderStudentList();
   if (v === 'classselect') renderClassSelectScreen();
   if (v === 'setup')       { loadYears(); renderClassList(); }
@@ -652,4 +659,69 @@ async function reloadSettings() {
   updateClassSelects();
   renderSettingsGrid();
   renderClassList();
+}
+
+// ===== ミニカレンダー =====
+const CAL = {
+  year:  new Date().getFullYear(),
+  month: new Date().getMonth(), // 0-indexed
+};
+
+const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+
+function renderCalendar() {
+  const el = $('mini-calendar');
+  if (!el) return;
+
+  const today = new Date();
+  const selected = new Date($('date-input').value);
+  const firstDay = new Date(CAL.year, CAL.month, 1);
+  const lastDay  = new Date(CAL.year, CAL.month + 1, 0);
+
+  let html = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calMove(-1)">‹</button>
+      <span>${CAL.year}年${CAL.month + 1}月</span>
+      <button class="cal-nav" onclick="calMove(1)">›</button>
+    </div>
+    <div class="cal-grid">
+      ${DOW.map(d => `<div class="cal-dow">${d}</div>`).join('')}
+  `;
+
+  // 月初の空白
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    html += `<div class="cal-day other-month"></div>`;
+  }
+
+  // 日付
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const date = new Date(CAL.year, CAL.month, d);
+    const dateStr = date.toISOString().split('T')[0];
+    const isToday    = date.toDateString() === today.toDateString();
+    const isSelected = date.toDateString() === selected.toDateString();
+    const dow = date.getDay();
+    const cls = [
+      'cal-day',
+      dow === 0 ? 'sun' : dow === 6 ? 'sat' : '',
+      isToday    ? 'today'    : '',
+      isSelected ? 'selected' : '',
+    ].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="calSelect('${dateStr}')">${d}</div>`;
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function calMove(dir) {
+  CAL.month += dir;
+  if (CAL.month < 0)  { CAL.month = 11; CAL.year--; }
+  if (CAL.month > 11) { CAL.month = 0;  CAL.year++; }
+  renderCalendar();
+}
+
+function calSelect(dateStr) {
+  $('date-input').value = dateStr;
+  renderCalendar();
+  loadAttendance();
 }
