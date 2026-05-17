@@ -554,7 +554,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-013';
+const VERSION = '20260517-014';
 
 const STATE = {
   className:      '',
@@ -739,22 +739,25 @@ function updateClassSelects() {
 }
 
 // ===== 出欠読み込み =====
-async function loadAttendance() {
+async function loadAttendance(dateStr) {
   if (!STATE.className) return;
+  const date = dateStr || $('date-input').value;
   try {
     const params = {
-      date: $('date-input').value,
+      date: date,
       period: $('period-select').value,
       className: STATE.className,
     };
-    console.log('params:', JSON.stringify(params));
     const res = await gasCall('clientGetAttendance', params);
-    console.log('res:', JSON.stringify(res));
     STATE.attendance = {};
     if (res && res.records) {
       res.records.forEach(r => { STATE.attendance[r.number] = r.status; });
     }
-    console.log('attendance loaded:', JSON.stringify(STATE.attendance));
+    // データ取得完了後に日付を更新
+    if (dateStr) {
+      $('date-input').value = dateStr;
+      renderCalendar();
+    }
     renderSeatMap();
     renderRoster();
     updateAbsentCount();
@@ -1279,9 +1282,8 @@ function calMove(dir) {
 }
 
 function calSelect(dateStr) {
-  $('date-input').value = dateStr;
-  renderCalendar();
-  loadAttendance();
+  STATE.pendingDate = dateStr;
+  loadAttendance(dateStr);
 }
 
 function parseLocalDate(dateStr) {
