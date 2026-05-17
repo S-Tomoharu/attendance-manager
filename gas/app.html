@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-005';
+const VERSION = '20260517-006';
 
 const STATE = {
   className:      '',
@@ -696,7 +696,7 @@ function renderCalendar() {
   // 日付
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const date = new Date(CAL.year, CAL.month, d);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = `${CAL.year}-${String(CAL.month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const isToday    = date.toDateString() === today.toDateString();
     const isSelected = date.toDateString() === selected.toDateString();
     const dow = date.getDay();
