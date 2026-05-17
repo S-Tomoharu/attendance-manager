@@ -73,3 +73,6 @@ function clientSwitchYear(data)              { return switchYear(p(data)); }
 function clientSaveLeaveperiod(data)         { return saveLeaveperiod(p(data)); }
 function clientAddClass(data)                { return addClass(p(data)); }
 function clientDeleteClass(data)             { return deleteClass(p(data)); }
+
+function clientGetAttendanceMatrix(params)  { return getAttendanceMatrix(p(params)) || { records: [] }; }
+function clientUpdateAttendanceCell(data)   { return updateAttendanceCell(p(data)); }

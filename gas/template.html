@@ -92,15 +92,13 @@
 
   <section class="view" id="view-history">
     <div class="history-filter">
-      <input type="date" id="history-date">
-      <button class="btn-secondary" id="history-load-btn">読み込む</button>
+      <select id="history-class-select" class="select-sm" style="color:var(--text);background:#fff;border:1px solid var(--border);"></select>
+      <input type="date" id="history-start">
+      <span style="font-size:13px">〜</span>
+      <input type="date" id="history-end">
+      <button class="btn-primary" id="history-load-btn">読み込む</button>
     </div>
-    <div class="history-table-wrap">
-      <table class="history-table">
-        <thead><tr><th>日付</th><th>時限</th><th>出席番号</th><th>名前</th><th>状態</th></tr></thead>
-        <tbody id="history-tbody"></tbody>
-      </table>
-    </div>
+    <div class="history-table-wrap" id="history-table-wrap"></div>
   </section>
 
   <section class="view" id="view-summary">

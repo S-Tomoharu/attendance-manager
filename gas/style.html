@@ -344,3 +344,29 @@ input[type="date"].select-sm { color: #fff; }
 .cal-day.sun { color: #ef4444; }
 .cal-day.sat { color: #3b82f6; }
 .cal-day.selected.sun, .cal-day.selected.sat { color: #fff; }
+
+/* ===== 出欠履歴マトリクス ===== */
+.history-matrix {
+  border-collapse: collapse; font-size: 12px;
+  white-space: nowrap;
+}
+.history-matrix th, .history-matrix td {
+  border: 1px solid var(--border); padding: 4px 6px; text-align: center;
+}
+.history-matrix th { background: var(--blue); color: #fff; position: sticky; top: 0; z-index: 1; }
+.history-matrix td:first-child, .history-matrix td:nth-child(2) {
+  position: sticky; background: #fff; z-index: 1;
+}
+.history-matrix td:first-child { left: 0; min-width: 36px; }
+.history-matrix td:nth-child(2) { left: 36px; min-width: 80px; text-align: left; }
+.history-matrix th:first-child { left: 0; }
+.history-matrix th:nth-child(2) { left: 36px; }
+
+.matrix-cell {
+  cursor: pointer; border-radius: 3px; padding: 2px 4px;
+  font-size: 11px; font-weight: 500; display: inline-block; min-width: 28px;
+}
+.matrix-cell.present  { background: var(--green-lt);  color: var(--green); }
+.matrix-cell.absent   { background: var(--red-lt);    color: var(--red); }
+.matrix-cell.excused  { background: var(--blue-lt);   color: var(--blue); }
+.matrix-cell.leave    { background: #f3f4f6; color: #9ca3af; cursor: default; }

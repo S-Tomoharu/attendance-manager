@@ -9,66 +9,200 @@ const STATUS = {
   LEAVE:    '休学',
 };
 
+// クラス名からシート名を生成
+function attendanceSheetName(className) {
+  return 'attendance_' + className;
+}
+
+// クラスの出欠シートを取得（なければ作成）
+function getOrCreateAttendanceSheet(ss, className) {
+  const name = attendanceSheetName(className);
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    // 1行目: ヘッダー（A1=番号, B1=名前, 以降は授業コマ）
+    sheet.getRange(1, 1).setValue('番号');
+    sheet.getRange(1, 2).setValue('名前');
+    sheet.getRange(1, 1, 1, 2)
+      .setBackground('#4A90D9').setFontColor('#FFFFFF').setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    sheet.setFrozenColumns(2);
+
+    // 生徒データを初期化
+    const studentsSheet = ss.getSheetByName('students');
+    if (studentsSheet) {
+      const data = studentsSheet.getDataRange().getValues();
+      const students = data.slice(1)
+        .filter(row => row[0] === className && row[1] !== '')
+        .sort((a, b) => Number(a[1]) - Number(b[1]));
+      if (students.length > 0) {
+        const rows = students.map(s => [s[1], s[2]]);
+        sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+      }
+    }
+  }
+  return sheet;
+}
+
+// 授業コマのカラムキー
+function lessonKey(date, period) {
+  return date + '_' + period;
+}
+
+// カラムキーからヘッダー表示用テキスト
+function lessonHeader(date, period) {
+  return date + '\n' + period + '限';
+}
+
+// シートのヘッダー行からコマ→列番号のマップを取得
+function getLessonColMap(sheet) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const map = {};
+  headers.forEach((h, i) => {
+    if (i >= 2) map[h] = i + 1; // 1-indexed
+  });
+  return map;
+}
+
+// 生徒番号→行番号のマップを取得
+function getStudentRowMap(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return {};
+  const numbers = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  const map = {};
+  numbers.forEach((row, i) => {
+    if (row[0] !== '') map[String(row[0])] = i + 2; // 1-indexed
+  });
+  return map;
+}
+
+// 出欠保存（全員分）
+function saveAttendance(data) {
+  const ss = getActiveSpreadsheet();
+  const { date, period, className, records } = data;
+  const sheet = getOrCreateAttendanceSheet(ss, className);
+
+  const key = lessonKey(date, period);
+  let colMap = getLessonColMap(sheet);
+
+  // コマ列がなければ追加
+  if (!colMap[key]) {
+    const newCol = sheet.getLastColumn() + 1;
+    sheet.getRange(1, newCol).setValue(key);
+    sheet.getRange(1, newCol)
+      .setBackground('#4A90D9').setFontColor('#FFFFFF').setFontWeight('bold')
+      .setWrap(true);
+    sheet.setColumnWidth(newCol, 70);
+    colMap[key] = newCol;
+  }
+
+  const col = colMap[key];
+  const rowMap = getStudentRowMap(sheet);
+
+  // 全員分の出欠を書き込む
+  records.forEach(r => {
+    const row = rowMap[String(r.number)];
+    if (row) {
+      sheet.getRange(row, col).setValue(r.status);
+    }
+  });
+
+  return { success: true, savedCount: records.length };
+}
+
+// 出欠読み込み（座席マップ用：特定日・時限）
 function getAttendance(params) {
   const ss = getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('attendance');
-  const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return { records: [] };
-
   const { date, period, className } = params;
+  const sheetName = attendanceSheetName(className);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return { records: [] };
 
-  const records = data.slice(1)
-    .filter(row => {
-      const rowDate = row[0] ? (row[0] instanceof Date 
-        ? Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy-MM-dd')
-        : String(row[0]).slice(0, 10)) : '';
-      return (!date || rowDate === date)
-          && (!period || String(row[1]) === String(period))
-          && (!className || row[2] === className);
-    })
+  const key = lessonKey(date, period);
+  const colMap = getLessonColMap(sheet);
+  const col = colMap[key];
+  if (!col) return { records: [] };
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { records: [] };
+
+  const data = sheet.getRange(2, 1, lastRow - 1, col).getValues();
+  const records = data
+    .filter(row => row[0] !== '')
     .map(row => ({
-      date:      row[0] instanceof Date 
-        ? Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy-MM-dd')
-        : String(row[0]).slice(0, 10),
-      period:    row[1],
-      className: row[2],
-      number:    row[3],
-      name:      row[4],
-      status:    row[5],
-      timestamp: row[6] instanceof Date ? Utilities.formatDate(row[6], 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss') : String(row[6]),
+      date,
+      period,
+      className,
+      number: String(row[0]),
+      name:   row[1],
+      status: row[col - 1] || STATUS.PRESENT,
     }));
 
   return { records };
 }
 
-function saveAttendance(data) {
+// 履歴マトリクス用：期間内の全出欠データ取得
+function getAttendanceMatrix(params) {
   const ss = getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('attendance');
-  const { date, period, className, records } = data;
+  const { className, startDate, endDate } = params;
+  const sheetName = attendanceSheetName(className);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return { lessons: [], students: [], matrix: {} };
 
-  // 既存の同日・同時限・同クラスのデータを削除
-  const existing = sheet.getDataRange().getValues();
-  const rowsToDelete = [];
-  for (let i = existing.length - 1; i >= 1; i--) {
-    const rowDate = existing[i][0]
-      ? Utilities.formatDate(new Date(existing[i][0]), 'Asia/Tokyo', 'yyyy-MM-dd')
-      : '';
-    if (rowDate === date && String(existing[i][1]) === String(period) && existing[i][2] === className) {
-      rowsToDelete.push(i + 1);
-    }
+  const lastCol = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+  if (lastCol < 3 || lastRow < 2) return { lessons: [], students: [], matrix: {} };
+
+  // ヘッダーからコマ一覧を取得
+  const headers = sheet.getRange(1, 3, 1, lastCol - 2).getValues()[0];
+  const lessons = headers
+    .map((h, i) => ({ key: h, col: i + 3 }))
+    .filter(l => {
+      const d = l.key.split('_')[0];
+      return d >= startDate && d <= endDate;
+    });
+
+  // 生徒データ取得
+  const studentData = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+  const students = studentData.filter(r => r[0] !== '').map(r => ({
+    number: String(r[0]),
+    name:   r[1],
+  }));
+
+  // 出欠データ取得
+  const matrix = {};
+  if (lessons.length > 0) {
+    const cols = lessons.map(l => l.col);
+    students.forEach((s, si) => {
+      matrix[s.number] = {};
+      lessons.forEach((l, li) => {
+        const val = sheet.getRange(si + 2, l.col).getValue();
+        matrix[s.number][l.key] = val || STATUS.PRESENT;
+      });
+    });
   }
-  rowsToDelete.forEach(row => sheet.deleteRow(row));
 
-  // 出席以外のレコードのみ保存
-  const nonPresent = records.filter(r => r.status !== STATUS.PRESENT);
-  if (nonPresent.length > 0) {
-    const timestamp = new Date();
-    const rows = nonPresent.map(r => [date, period, className, r.number, r.name, r.status, timestamp]);
-    const lastRow = sheet.getLastRow();
-    sheet.getRange(lastRow + 1, 1, rows.length, 7).setValues(rows);
-  }
+  return { lessons: lessons.map(l => l.key), students, matrix };
+}
 
-  return { success: true, savedCount: nonPresent.length };
+// 単一セルの出欠を更新
+function updateAttendanceCell(data) {
+  const ss = getActiveSpreadsheet();
+  const { date, period, className, number, status } = data;
+  const sheet = ss.getSheetByName(attendanceSheetName(className));
+  if (!sheet) return { error: 'シートが見つかりません' };
+
+  const key = lessonKey(date, period);
+  const colMap = getLessonColMap(sheet);
+  const col = colMap[key];
+  if (!col) return { error: 'コマが見つかりません' };
+
+  const rowMap = getStudentRowMap(sheet);
+  const row = rowMap[String(number)];
+  if (!row) return { error: '生徒が見つかりません' };
+
+  sheet.getRange(row, col).setValue(status);
+  return { success: true };
 }
 
 function getSettings(params) {
@@ -104,86 +238,44 @@ function saveSettings(data) {
   return { success: true };
 }
 
-// 期間指定での出欠集計・CSV出力用データ取得
+// 期間集計（CSV出力用）
 function getAttendanceSummary(params) {
   const ss = getActiveSpreadsheet();
   const { className, startDate, endDate } = params;
 
-  // 生徒データ取得
+  const matrixData = getAttendanceMatrix({ className, startDate, endDate });
+  const { lessons, students, matrix } = matrixData;
+
   const studentsSheet = ss.getSheetByName('students');
   const studentsData = studentsSheet.getDataRange().getValues();
-  const students = studentsData.slice(1)
-    .filter(row => row[0] === className && row[1] !== '')
-    .map(row => ({
-      className:    row[0],
-      number:       row[1],
-      name:         row[2],
-      leaveStart:   row[5] ? Utilities.formatDate(new Date(row[5]), 'Asia/Tokyo', 'yyyy-MM-dd') : '',
-      leaveEnd:     row[6] ? Utilities.formatDate(new Date(row[6]), 'Asia/Tokyo', 'yyyy-MM-dd') : '',
-    }));
-
-  // 出欠データ取得
-  const attendanceSheet = ss.getSheetByName('attendance');
-  const attendanceData = attendanceSheet.getDataRange().getValues();
-  const records = attendanceData.slice(1).filter(row => {
-    const rowDate = row[0] ? Utilities.formatDate(new Date(row[0]), 'Asia/Tokyo', 'yyyy-MM-dd') : '';
-    return row[2] === className && rowDate >= startDate && rowDate <= endDate;
-  });
-
-  // 期間内の授業コマ数（ユニークな日付+時限の組み合わせ）
-  // attendance に記録がなくても授業があった日を数えるため
-  // 「保存」した日付+時限をすべてカウント
-  const allRecords = attendanceData.slice(1).filter(row => {
-    const rowDate = row[0] ? Utilities.formatDate(new Date(row[0]), 'Asia/Tokyo', 'yyyy-MM-dd') : '';
-    return row[2] === className && rowDate >= startDate && rowDate <= endDate;
-  });
-
-  // ユニークな授業コマを取得
-  const lessonSet = new Set();
-  allRecords.forEach(row => {
-    const rowDate = Utilities.formatDate(new Date(row[0]), 'Asia/Tokyo', 'yyyy-MM-dd');
-    lessonSet.add(`${rowDate}_${row[1]}`);
-  });
-  const totalLessons = lessonSet.size;
-
-  // 生徒ごとに集計
-  const summary = students.map(s => {
-    // 休学期間チェック
-    const isOnLeave = s.leaveStart && s.leaveEnd;
-
-    if (isOnLeave) {
-      return {
-        number:        s.number,
-        name:          s.name,
-        lessonCount:   '',
-        absenceCount:  '',
-        onLeave:       true,
-      };
-    }
-
-    // 公欠・出校停止のコマ数
-    const excusedCount = records.filter(r =>
-      String(r[3]) === String(s.number) && r[5] === STATUS.EXCUSED
-    ).length;
-
-    // 欠席のコマ数
-    const absenceCount = records.filter(r =>
-      String(r[3]) === String(s.number) && r[5] === STATUS.ABSENT
-    ).length;
-
-    return {
-      number:       s.number,
-      name:         s.name,
-      lessonCount:  totalLessons - excusedCount,
-      absenceCount: absenceCount,
-      onLeave:      false,
+  const leaveMap = {};
+  studentsData.slice(1).filter(row => row[0] === className).forEach(row => {
+    leaveMap[String(row[1])] = {
+      leaveStart: row[5] ? Utilities.formatDate(new Date(row[5]), 'Asia/Tokyo', 'yyyy-MM-dd') : '',
+      leaveEnd:   row[6] ? Utilities.formatDate(new Date(row[6]), 'Asia/Tokyo', 'yyyy-MM-dd') : '',
     };
   });
 
-  return { summary, totalLessons };
+  const summary = students.map(s => {
+    const leave = leaveMap[s.number] || {};
+    const isOnLeave = leave.leaveStart && leave.leaveEnd;
+    if (isOnLeave) return { number: s.number, name: s.name, lessonCount: '', absenceCount: '', onLeave: true };
+
+    let lessonCount = 0;
+    let absenceCount = 0;
+    lessons.forEach(key => {
+      const status = (matrix[s.number] || {})[key] || STATUS.PRESENT;
+      if (status !== STATUS.EXCUSED) lessonCount++;
+      if (status === STATUS.ABSENT) absenceCount++;
+    });
+
+    return { number: s.number, name: s.name, lessonCount, absenceCount, onLeave: false };
+  });
+
+  return { summary, totalLessons: lessons.length };
 }
 
-// クラスを追加
+// クラス追加・削除
 function addClass(data) {
   const ss = getActiveSpreadsheet();
   const sheet = ss.getSheetByName('settings');
@@ -195,7 +287,6 @@ function addClass(data) {
   return { success: true };
 }
 
-// クラスを削除
 function deleteClass(data) {
   const ss = getActiveSpreadsheet();
   const sheet = ss.getSheetByName('settings');

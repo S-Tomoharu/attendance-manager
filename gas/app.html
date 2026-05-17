@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-014';
+const VERSION = '20260517-015';
 
 const STATE = {
   className:      '',
@@ -171,13 +171,14 @@ function switchView(v) {
   if (v === 'seat')        { loadAttendance(); renderCalendar(); }
   if (v === 'number')      renderStudentList();
   if (v === 'classselect') renderClassSelectScreen();
+  if (v === 'history')     initHistoryView();
   if (v === 'setup')       { loadYears(); renderClassList(); }
 }
 
 // ===== クラス選択肢 =====
 function updateClassSelects() {
   const classes = [...new Set(STATE.settings.map(s => s.className))];
-  ['class-select', 'csv-class-select', 'summary-class-select'].forEach(id => {
+  ['class-select', 'csv-class-select', 'summary-class-select', 'history-class-select'].forEach(id => {
     const sel = $(id);
     if (!sel) return;
     sel.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -465,22 +466,80 @@ async function clearLeaveperiod() {
   }
 }
 
-// ===== 履歴 =====
+// ===== 履歴マトリクス =====
 async function loadHistory() {
+  const className = $('history-class-select').value;
+  const startDate = $('history-start').value;
+  const endDate   = $('history-end').value;
+  if (!className || !startDate || !endDate) { showToast('クラスと期間を指定してください'); return; }
+
+  const wrap = $('history-table-wrap');
+  wrap.innerHTML = '<p style="color:#888;padding:20px">読み込み中...</p>';
+
   try {
-    const res = await gasCall('clientGetAttendance', {
-      date:      $('history-date').value,
-      className: STATE.className,
-    });
-    const records = res.records || [];
-    $('history-tbody').innerHTML = records.length === 0
-      ? '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">記録なし</td></tr>'
-      : records.map(r => `<tr>
-          <td>${r.date}</td><td>${r.period}限</td>
-          <td>${r.number}番</td><td>${r.name}</td>
-          <td><span class="status-badge ${STATUS_CLASS[r.status]}">${r.status}</span></td>
-        </tr>`).join('');
+    const res = await gasCall('clientGetAttendanceMatrix', { className, startDate, endDate });
+    const { lessons, students, matrix } = res;
+
+    if (!lessons || lessons.length === 0) {
+      wrap.innerHTML = '<p style="color:#888;padding:20px">記録なし</p>';
+      return;
+    }
+
+    // ヘッダー行
+    const headerCols = lessons.map(key => {
+      const [date, period] = key.split('_');
+      const d = parseLocalDate(date);
+      const label = `${d.getMonth()+1}/${d.getDate()}<br>${period}限`;
+      return `<th>${label}</th>`;
+    }).join('');
+
+    // データ行
+    const dataRows = students.map(s => {
+      const cells = lessons.map(key => {
+        const [date, period] = key.split('_');
+        const status = (matrix[s.number] || {})[key] || '出席';
+        const cls = STATUS_CLASS[status] || 'present';
+        const label = status === '出席' ? '○' : status === '欠席' ? '×' : status === '公欠・出校停止' ? '公' : '休';
+        const onLeave = isOnLeave(s, date);
+        if (onLeave || status === '休学') return `<td><span class="matrix-cell leave">－</span></td>`;
+        return `<td><span class="matrix-cell ${cls}"
+          data-number="${s.number}" data-date="${date}" data-period="${period}" data-class="${className}"
+          onclick="cycleStatus(this)">${label}</span></td>`;
+      }).join('');
+      return `<tr><td>${s.number}</td><td>${s.name}</td>${cells}</tr>`;
+    }).join('');
+
+    wrap.innerHTML = `
+      <table class="history-matrix">
+        <thead><tr><th>番号</th><th>名前</th>${headerCols}</tr></thead>
+        <tbody>${dataRows}</tbody>
+      </table>`;
+
   } catch (e) { showToast('履歴読み込み失敗: ' + e.message); }
+}
+
+// セルをクリックするたびに状態を循環させて即保存
+const STATUS_CYCLE = ['出席', '欠席', '公欠・出校停止'];
+const STATUS_LABEL = { '出席': '○', '欠席': '×', '公欠・出校停止': '公' };
+
+async function cycleStatus(el) {
+  const current = Object.keys(STATUS_LABEL).find(s => STATUS_LABEL[s] === el.textContent) || '出席';
+  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length];
+  const cls  = STATUS_CLASS[next];
+  el.textContent = STATUS_LABEL[next];
+  el.className = `matrix-cell ${cls}`;
+
+  try {
+    await gasCall('clientUpdateAttendanceCell', {
+      date:      el.dataset.date,
+      period:    el.dataset.period,
+      className: el.dataset.class,
+      number:    el.dataset.number,
+      status:    next,
+    });
+  } catch (e) {
+    showToast('更新失敗: ' + e.message);
+  }
 }
 
 // ===== 設定 =====
@@ -737,4 +796,13 @@ function calSelect(dateStr) {
 function parseLocalDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);
+}
+
+function initHistoryView() {
+  const today = new Date();
+  const firstOfMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+  const todayStr = today.toISOString().split('T')[0];
+  if ($('history-start')) $('history-start').value = firstOfMonth;
+  if ($('history-end'))   $('history-end').value   = todayStr;
+  if ($('history-class-select') && STATE.className) $('history-class-select').value = STATE.className;
 }
