@@ -254,6 +254,17 @@ input[type="date"].select-sm { color: #fff; }
   border: 1px solid var(--red); border-radius: 6px; font-size: 12px; cursor: pointer;
 }
 
+.class-select-screen { max-width: 400px; margin: 40px auto; }
+.class-select-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.class-select-btn {
+  display: block; width: 100%; padding: 18px;
+  background: #fff; border: 2px solid var(--border);
+  border-radius: var(--radius); font-size: 18px; font-weight: 600;
+  cursor: pointer; margin-bottom: 10px; text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.class-select-btn:hover { border-color: var(--blue); background: var(--blue-lt); color: var(--blue); }
+
   </style>
 </head>
 <body>
@@ -266,6 +277,7 @@ input[type="date"].select-sm { color: #fff; }
   </div>
   <div class="header-right">
     <select id="class-select" class="select-sm"></select>
+    <input type="date" id="date-input" class="select-sm">
     <select id="period-select" class="select-sm">
       <option value="1">1限</option>
       <option value="2">2限</option>
@@ -274,7 +286,6 @@ input[type="date"].select-sm { color: #fff; }
       <option value="5">5限</option>
       <option value="6">6限</option>
     </select>
-    <input type="date" id="date-input" class="select-sm">
     <button class="btn-primary" id="save-btn">保存</button>
   </div>
 </header>
@@ -285,7 +296,8 @@ input[type="date"].select-sm { color: #fff; }
     <button class="icon-btn" id="close-menu-btn">✕</button>
   </div>
   <ul class="sidenav-list">
-    <li><a href="#" class="sidenav-item active" data-view="seat">座席マップ</a></li>
+    <li><a href="#" class="sidenav-item" data-view="classselect">クラス選択</a></li>
+    <li><a href="#" class="sidenav-item" data-view="seat">座席マップ</a></li>
     <li><a href="#" class="sidenav-item" data-view="number">出席番号</a></li>
     <li><a href="#" class="sidenav-item" data-view="history">出欠履歴</a></li>
     <li><a href="#" class="sidenav-item" data-view="summary">集計・出力</a></li>
@@ -297,7 +309,15 @@ input[type="date"].select-sm { color: #fff; }
 
 <main class="main">
 
-  <section class="view active" id="view-seat">
+  <!-- クラス選択画面 -->
+  <section class="view active" id="view-classselect">
+    <div class="class-select-screen">
+      <h2 class="class-select-title">クラスを選択</h2>
+      <div id="class-select-list"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-seat">
     <div class="view-toolbar">
       <div class="legend">
         <span class="legend-item present">出席</span>
@@ -437,7 +457,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-001';
+const VERSION = '20260517-002';
 
 const STATE = {
   className:      '',
@@ -498,12 +518,29 @@ async function loadInitialData() {
     STATE.students = st.students || [];
     updateClassSelects();
     renderSettingsGrid();
-    if (STATE.className) loadAttendance();
-    renderSeatMap();
-    renderStudentList();
+    renderClassSelectScreen();
   } catch (e) {
     showToast('データ読み込み失敗: ' + e.message);
   }
+}
+
+function renderClassSelectScreen() {
+  const listEl = $('class-select-list');
+  if (!listEl) return;
+  const classes = STATE.settings.map(s => s.className);
+  listEl.innerHTML = classes.length === 0
+    ? '<p style="color:#888;text-align:center">クラスがありません。年度セットアップからクラスを追加してください。</p>'
+    : classes.map(c => `
+        <button class="class-select-btn" onclick="selectClassAndGo('${c}')">${c}</button>
+      `).join('');
+}
+
+function selectClassAndGo(className) {
+  STATE.className = className;
+  $('class-select').value = className;
+  localStorage.setItem('className', className);
+  switchView('seat');
+  loadAttendance();
 }
 
 // ===== イベント =====
@@ -577,10 +614,12 @@ function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
   $('view-' + v).classList.add('active');
-  document.querySelector(`[data-view="${v}"]`).classList.add('active');
-  if (v === 'seat')    renderSeatMap();
-  if (v === 'number')  renderStudentList();
-  if (v === 'setup')   { loadYears(); renderClassList(); }
+  const navItem = document.querySelector(`[data-view="${v}"]`);
+  if (navItem) navItem.classList.add('active');
+  if (v === 'seat')        { renderSeatMap(); renderStudentList(); }
+  if (v === 'number')      renderStudentList();
+  if (v === 'classselect') renderClassSelectScreen();
+  if (v === 'setup')       { loadYears(); renderClassList(); }
 }
 
 // ===== クラス選択肢 =====

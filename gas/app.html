@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-001';
+const VERSION = '20260517-002';
 
 const STATE = {
   className:      '',
@@ -63,12 +63,29 @@ async function loadInitialData() {
     STATE.students = st.students || [];
     updateClassSelects();
     renderSettingsGrid();
-    if (STATE.className) loadAttendance();
-    renderSeatMap();
-    renderStudentList();
+    renderClassSelectScreen();
   } catch (e) {
     showToast('データ読み込み失敗: ' + e.message);
   }
+}
+
+function renderClassSelectScreen() {
+  const listEl = $('class-select-list');
+  if (!listEl) return;
+  const classes = STATE.settings.map(s => s.className);
+  listEl.innerHTML = classes.length === 0
+    ? '<p style="color:#888;text-align:center">クラスがありません。年度セットアップからクラスを追加してください。</p>'
+    : classes.map(c => `
+        <button class="class-select-btn" onclick="selectClassAndGo('${c}')">${c}</button>
+      `).join('');
+}
+
+function selectClassAndGo(className) {
+  STATE.className = className;
+  $('class-select').value = className;
+  localStorage.setItem('className', className);
+  switchView('seat');
+  loadAttendance();
 }
 
 // ===== イベント =====
@@ -142,10 +159,12 @@ function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
   $('view-' + v).classList.add('active');
-  document.querySelector(`[data-view="${v}"]`).classList.add('active');
-  if (v === 'seat')    renderSeatMap();
-  if (v === 'number')  renderStudentList();
-  if (v === 'setup')   { loadYears(); renderClassList(); }
+  const navItem = document.querySelector(`[data-view="${v}"]`);
+  if (navItem) navItem.classList.add('active');
+  if (v === 'seat')        { renderSeatMap(); renderStudentList(); }
+  if (v === 'number')      renderStudentList();
+  if (v === 'classselect') renderClassSelectScreen();
+  if (v === 'setup')       { loadYears(); renderClassList(); }
 }
 
 // ===== クラス選択肢 =====
