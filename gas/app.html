@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-006';
+const VERSION = '20260517-007';
 
 const STATE = {
   className:      '',
@@ -196,7 +196,9 @@ async function loadAttendance() {
       className: STATE.className,
     });
     STATE.attendance = {};
-    (res.records || []).forEach(r => { STATE.attendance[r.number] = r.status; });
+    if (res && res.records) {
+      res.records.forEach(r => { STATE.attendance[r.number] = r.status; });
+    }
     renderSeatMap();
     renderRoster();
     updateAbsentCount();

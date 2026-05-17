@@ -55,7 +55,10 @@ function getYears() {
 }
 
 function clientGetStudents(params)           { return getStudents(params); }
-function clientGetAttendance(params)         { return getAttendance(params); }
+function clientGetAttendance(params) {
+  const result = getAttendance(params);
+  return result || { records: [] };
+}
 function clientGetSettings(params)           { return getSettings(params); }
 function clientGetYears()                    { return getYears(); }
 function clientGetAttendanceSummary(params)  { return getAttendanceSummary(params); }
