@@ -554,7 +554,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-008';
+const VERSION = '20260517-009';
 
 const STATE = {
   className:      '',
@@ -751,6 +751,7 @@ async function loadAttendance() {
     if (res && res.records) {
       res.records.forEach(r => { STATE.attendance[r.number] = r.status; });
     }
+    console.log('attendance loaded:', JSON.stringify(STATE.attendance));
     renderSeatMap();
     renderRoster();
     updateAbsentCount();
