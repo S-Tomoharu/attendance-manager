@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-015';
+const VERSION = '20260517-016';
 
 const STATE = {
   className:      '',
@@ -40,11 +40,10 @@ function gasCall(funcName, params) {
 // ===== 初期化 =====
 function init() {
   const today = new Date().toISOString().split('T')[0];
-  $('date-input').value = today;
-  $('history-date').value = today;
-  $('setup-year').value = new Date().getFullYear();
-  $('summary-start').value = today.slice(0, 7) + '-01';
-  $('summary-end').value = today;
+  if ($('date-input'))    $('date-input').value = today;
+  if ($('setup-year'))    $('setup-year').value = new Date().getFullYear();
+  if ($('summary-start')) $('summary-start').value = today.slice(0, 7) + '-01';
+  if ($('summary-end'))   $('summary-end').value = today;
 
   const vEl = $('app-version');
   if (vEl) vEl.textContent = 'v' + VERSION;
@@ -135,7 +134,7 @@ function setupEventListeners() {
   $('number-input').addEventListener('input', () => filterStudentList($('number-input').value));
   $('number-input').addEventListener('keydown', e => { if (e.key === 'Enter') filterStudentList($('number-input').value); });
 
-  $('history-load-btn').addEventListener('click', loadHistory);
+  if ($('history-load-btn')) $('history-load-btn').addEventListener('click', loadHistory);
   $('save-settings-btn').addEventListener('click', saveSettings);
   $('csv-input').addEventListener('change', previewCSV);
   $('csv-upload-btn').addEventListener('click', uploadCSV);
