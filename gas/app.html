@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-019';
+const VERSION = '20260517-020';
 
 const STATE = {
   className:      '',
@@ -130,10 +130,6 @@ function setupEventListeners() {
 
   $('leave-save-btn').addEventListener('click', saveLeaveperiod);
   $('leave-clear-btn').addEventListener('click', clearLeaveperiod);
-
-  $('number-search-btn').addEventListener('click', () => filterStudentList($('number-input').value));
-  $('number-input').addEventListener('input', () => filterStudentList($('number-input').value));
-  $('number-input').addEventListener('keydown', e => { if (e.key === 'Enter') filterStudentList($('number-input').value); });
 
   if ($('history-load-btn')) $('history-load-btn').addEventListener('click', loadHistory);
   $('save-settings-btn').addEventListener('click', saveSettings);
