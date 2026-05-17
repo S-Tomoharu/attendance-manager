@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-004';
+const VERSION = '20260517-005';
 
 const STATE = {
   className:      '',
@@ -111,7 +111,7 @@ function setupEventListeners() {
   });
   $('period-select').addEventListener('change', loadAttendance);
   $('date-input').addEventListener('change', () => {
-    const d = new Date($('date-input').value);
+    const d = parseLocalDate($('date-input').value);
     CAL.year  = d.getFullYear();
     CAL.month = d.getMonth();
     renderCalendar();
@@ -168,7 +168,7 @@ function switchView(v) {
   $('view-' + v).classList.add('active');
   const navItem = document.querySelector(`[data-view="${v}"]`);
   if (navItem) navItem.classList.add('active');
-  if (v === 'seat')        { renderSeatMap(); renderStudentList(); renderCalendar(); }
+  if (v === 'seat')        { loadAttendance(); renderCalendar(); }
   if (v === 'number')      renderStudentList();
   if (v === 'classselect') renderClassSelectScreen();
   if (v === 'setup')       { loadYears(); renderClassList(); }
@@ -673,8 +673,8 @@ function renderCalendar() {
   const el = $('mini-calendar');
   if (!el) return;
 
-  const today = new Date();
-  const selected = new Date($('date-input').value);
+  const today    = new Date();
+  const selected = parseLocalDate($('date-input').value);
   const firstDay = new Date(CAL.year, CAL.month, 1);
   const lastDay  = new Date(CAL.year, CAL.month + 1, 0);
 
@@ -724,4 +724,9 @@ function calSelect(dateStr) {
   $('date-input').value = dateStr;
   renderCalendar();
   loadAttendance();
+}
+
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
