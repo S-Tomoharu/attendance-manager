@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-011';
+const VERSION = '20260517-012';
 
 const STATE = {
   className:      '',
@@ -33,7 +33,7 @@ function gasCall(funcName, params) {
     google.script.run
       .withSuccessHandler(resolve)
       .withFailureHandler(reject)
-      [funcName](params);
+      [funcName](JSON.stringify(params));
   });
 }
 
