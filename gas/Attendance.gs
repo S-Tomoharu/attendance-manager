@@ -19,13 +19,17 @@ function getAttendance(params) {
 
   const records = data.slice(1)
     .filter(row => {
-      const rowDate = row[0] ? Utilities.formatDate(new Date(row[0]), 'Asia/Tokyo', 'yyyy-MM-dd') : '';
+      const rowDate = row[0] ? (row[0] instanceof Date 
+        ? Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy-MM-dd')
+        : String(row[0]).slice(0, 10)) : '';
       return (!date || rowDate === date)
           && (!period || String(row[1]) === String(period))
           && (!className || row[2] === className);
     })
     .map(row => ({
-      date:      Utilities.formatDate(new Date(row[0]), 'Asia/Tokyo', 'yyyy-MM-dd'),
+      date:      row[0] instanceof Date 
+        ? Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy-MM-dd')
+        : String(row[0]).slice(0, 10),
       period:    row[1],
       className: row[2],
       number:    row[3],
