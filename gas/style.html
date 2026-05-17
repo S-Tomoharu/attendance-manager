@@ -256,3 +256,52 @@ input[type="date"].select-sm { color: #fff; }
   transition: border-color .15s, background .15s;
 }
 .class-select-btn:hover { border-color: var(--blue); background: var(--blue-lt); color: var(--blue); }
+
+/* ===== 座席マップ＋名簿レイアウト ===== */
+.seat-roster-layout {
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.seat-area {
+  width: 60%; flex-shrink: 0;
+}
+.roster-area {
+  width: 40%; flex-shrink: 0;
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--border);
+  max-height: calc(100vh - 140px); overflow-y: auto;
+}
+.roster-list { }
+.roster-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  cursor: pointer; font-size: 13px;
+}
+.roster-item:last-child { border-bottom: none; }
+.roster-item:hover { background: var(--gray-lt); }
+.roster-item.on-leave { opacity: .5; cursor: default; }
+.roster-item-left { display: flex; align-items: center; gap: 8px; }
+.roster-item-num  { color: var(--text-sm); min-width: 28px; font-size: 12px; }
+.roster-item-name { font-weight: 500; }
+.roster-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500;
+}
+.roster-badge.present  { background: var(--green-lt);  color: var(--green); }
+.roster-badge.absent   { background: var(--red-lt);    color: var(--red); }
+.roster-badge.excused  { background: var(--blue-lt);   color: var(--blue); }
+.roster-badge.leave    { background: #f3f4f6; color: #6b7280; }
+
+/* ===== ポップアップ（小さめ） ===== */
+.popup-sm {
+  background: #fff; border-radius: 12px; padding: 16px;
+  min-width: 240px; max-width: 300px; width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2); text-align: center;
+}
+.popup-sm .popup-student-name   { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.popup-sm .popup-student-number { font-size: 13px; color: var(--text-sm); margin-bottom: 14px; }
+.popup-sm .popup-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.popup-sm .popup-btn { padding: 10px 6px; font-size: 13px; }
+
+@media (max-width: 700px) {
+  .seat-roster-layout { flex-direction: column; }
+  .seat-area, .roster-area { width: 100%; }
+}

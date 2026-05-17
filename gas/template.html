@@ -39,7 +39,6 @@
   </div>
   <ul class="sidenav-list">
     <li><a href="#" class="sidenav-item" data-view="classselect">クラス選択</a></li>
-    <li><a href="#" class="sidenav-item" data-view="seat">座席マップ</a></li>
     <li><a href="#" class="sidenav-item" data-view="number">出席番号</a></li>
     <li><a href="#" class="sidenav-item" data-view="history">出欠履歴</a></li>
     <li><a href="#" class="sidenav-item" data-view="summary">集計・出力</a></li>
@@ -69,8 +68,15 @@
       </div>
       <div class="absent-count">欠席等: <span id="absent-count">0</span>人</div>
     </div>
-    <div class="blackboard">黒板</div>
-    <div class="seat-map" id="seat-map"></div>
+    <div class="seat-roster-layout">
+      <div class="seat-area">
+        <div class="blackboard">黒板</div>
+        <div class="seat-map" id="seat-map"></div>
+      </div>
+      <div class="roster-area">
+        <div class="roster-list" id="roster-list"></div>
+      </div>
+    </div>
   </section>
 
   <section class="view" id="view-number">
@@ -162,7 +168,7 @@
 
 <!-- 出欠ポップアップ -->
 <div class="popup-overlay" id="popup-overlay">
-  <div class="popup">
+  <div class="popup-sm">
     <div class="popup-student-name" id="popup-name"></div>
     <div class="popup-student-number" id="popup-number"></div>
     <div class="popup-buttons">

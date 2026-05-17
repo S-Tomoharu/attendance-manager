@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-002';
+const VERSION = '20260517-003';
 
 const STATE = {
   className:      '',
@@ -191,7 +191,7 @@ async function loadAttendance() {
     STATE.attendance = {};
     (res.records || []).forEach(r => { STATE.attendance[r.number] = r.status; });
     renderSeatMap();
-    renderStudentList();
+    renderRoster();
     updateAbsentCount();
   } catch (e) { console.error(e); }
 }
@@ -228,7 +228,7 @@ function setStatus(student, status) {
     STATE.attendance[student.number] = status;
   }
   renderSeatMap();
-  renderStudentList();
+  renderRoster();
   updateAbsentCount();
 }
 
@@ -295,6 +295,46 @@ function renderSeatMap() {
   });
 
   $('seat-map').querySelectorAll('.leave-seat').forEach(el => {
+    el.addEventListener('click', () => {
+      const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
+      if (student) openLeavePopup(student);
+    });
+  });
+
+  renderRoster();
+}
+
+// ===== 名簿描画 =====
+function renderRoster() {
+  const rosterEl = $('roster-list');
+  if (!rosterEl) return;
+
+  const today = $('date-input').value;
+  const classStudents = STATE.students
+    .filter(s => s.className === STATE.className)
+    .sort((a, b) => Number(a.number) - Number(b.number));
+
+  rosterEl.innerHTML = classStudents.map(s => {
+    const onLeave = isOnLeave(s, today);
+    const status  = onLeave ? '休学' : (STATE.attendance[s.number] || '出席');
+    const cls     = STATUS_CLASS[status] || 'present';
+    return `<div class="roster-item ${onLeave ? 'on-leave' : ''}" data-number="${s.number}">
+      <div class="roster-item-left">
+        <span class="roster-item-num">${s.number}</span>
+        <span class="roster-item-name">${s.name}</span>
+      </div>
+      <span class="roster-badge ${cls}">${status}</span>
+    </div>`;
+  }).join('');
+
+  rosterEl.querySelectorAll('.roster-item:not(.on-leave)').forEach(el => {
+    el.addEventListener('click', () => {
+      const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
+      if (student) openPopup(student);
+    });
+  });
+
+  rosterEl.querySelectorAll('.roster-item.on-leave').forEach(el => {
     el.addEventListener('click', () => {
       const student = classStudents.find(s => String(s.number) === String(el.dataset.number));
       if (student) openLeavePopup(student);
