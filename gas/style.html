@@ -262,13 +262,13 @@ input[type="date"].select-sm { color: #fff; }
   display: flex; gap: 10px; align-items: flex-start;
 }
 .calendar-area {
-  width: 20%; flex-shrink: 0;
+  width: 15%; flex-shrink: 0;
 }
 .seat-area {
-  width: 55%; flex-shrink: 0; display: flex; flex-direction: column;
+  width: 65%; flex-shrink: 0; display: flex; flex-direction: column;
 }
 .roster-area {
-  width: 25%; flex-shrink: 0;
+  width: 20%; flex-shrink: 0;
   background: #fff; border-radius: var(--radius);
   border: 1px solid var(--border);
   max-height: calc(100vh - 140px); overflow-y: auto;
@@ -370,3 +370,10 @@ input[type="date"].select-sm { color: #fff; }
 .matrix-cell.absent   { background: var(--red-lt);    color: var(--red); }
 .matrix-cell.excused  { background: var(--blue-lt);   color: var(--blue); }
 .matrix-cell.leave    { background: #f3f4f6; color: #9ca3af; cursor: default; }
+
+.btn-save-bottom {
+  padding: 8px 32px; background: var(--blue); color: #fff;
+  border: none; border-radius: var(--radius); font-size: 14px;
+  font-weight: 600; cursor: pointer;
+}
+.btn-save-bottom:hover { background: #1d4ed8; }

@@ -270,13 +270,13 @@ input[type="date"].select-sm { color: #fff; }
   display: flex; gap: 10px; align-items: flex-start;
 }
 .calendar-area {
-  width: 20%; flex-shrink: 0;
+  width: 15%; flex-shrink: 0;
 }
 .seat-area {
-  width: 55%; flex-shrink: 0; display: flex; flex-direction: column;
+  width: 65%; flex-shrink: 0; display: flex; flex-direction: column;
 }
 .roster-area {
-  width: 25%; flex-shrink: 0;
+  width: 20%; flex-shrink: 0;
   background: #fff; border-radius: var(--radius);
   border: 1px solid var(--border);
   max-height: calc(100vh - 140px); overflow-y: auto;
@@ -379,6 +379,13 @@ input[type="date"].select-sm { color: #fff; }
 .matrix-cell.excused  { background: var(--blue-lt);   color: var(--blue); }
 .matrix-cell.leave    { background: #f3f4f6; color: #9ca3af; cursor: default; }
 
+.btn-save-bottom {
+  padding: 8px 32px; background: var(--blue); color: #fff;
+  border: none; border-radius: var(--radius); font-size: 14px;
+  font-weight: 600; cursor: pointer;
+}
+.btn-save-bottom:hover { background: #1d4ed8; }
+
   </style>
 </head>
 <body>
@@ -446,7 +453,10 @@ input[type="date"].select-sm { color: #fff; }
       </div>
       <div class="seat-area">
         <div class="seat-map" id="seat-map"></div>
-        <div class="blackboard">黒板</div>
+        <div class="blackboard" style="margin-top:12px">黒板</div>
+        <div style="text-align:center;margin-top:8px">
+          <button class="btn-save-bottom" id="save-btn-bottom">保存</button>
+        </div>
       </div>
       <div class="roster-area">
         <div class="roster-list" id="roster-list"></div>
@@ -578,7 +588,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-016';
+const VERSION = '20260517-017';
 
 const STATE = {
   className:      '',
@@ -693,6 +703,7 @@ function setupEventListeners() {
     loadAttendance();
   });
   $('save-btn').addEventListener('click', saveAttendance);
+  if ($('save-btn-bottom')) $('save-btn-bottom').addEventListener('click', saveAttendance);
 
   $('popup-close').addEventListener('click', closePopup);
   $('popup-overlay').addEventListener('click', e => { if (e.target === $('popup-overlay')) closePopup(); });
