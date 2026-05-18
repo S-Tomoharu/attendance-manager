@@ -579,7 +579,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260518-002';
+const VERSION = '20260518-003';
 
 const STATE = {
   className:      '',
@@ -587,6 +587,7 @@ const STATE = {
   students:       [],
   settings:       [],
   currentStudent: null,
+  unsaved:        false, // 未保存フラグ
 };
 
 const STATUS_CLASS = {
@@ -627,6 +628,13 @@ function init() {
 
   setupEventListeners();
   loadInitialData();
+
+  window.addEventListener('beforeunload', e => {
+    if (STATE.unsaved) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
 }
 
 async function loadInitialData() {
@@ -680,13 +688,23 @@ function setupEventListeners() {
   });
 
   $('class-select').addEventListener('change', () => {
+    if (STATE.unsaved && !confirm('保存されていない変更があります。クラスを切り替えますか？')) {
+      $('class-select').value = STATE.className;
+      return;
+    }
+    STATE.unsaved = false;
     STATE.className = $('class-select').value;
     loadAttendance();
     renderSeatMap();
-    renderStudentList();
   });
-  $('period-select').addEventListener('change', loadAttendance);
+  $('period-select').addEventListener('change', () => {
+    if (STATE.unsaved && !confirm('保存されていない変更があります。時限を切り替えますか？')) return;
+    STATE.unsaved = false;
+    loadAttendance();
+  });
   $('date-input').addEventListener('change', () => {
+    if (STATE.unsaved && !confirm('保存されていない変更があります。日付を変更しますか？')) return;
+    STATE.unsaved = false;
     const d = parseLocalDate($('date-input').value);
     CAL.year  = d.getFullYear();
     CAL.month = d.getMonth();
@@ -736,6 +754,8 @@ function closeMenu() { $('sidenav').classList.remove('open'); $('overlay').class
 
 // ===== ビュー切り替え =====
 function switchView(v) {
+  if (STATE.unsaved && !confirm('保存されていない変更があります。移動しますか？')) return;
+  STATE.unsaved = false;
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
   $('view-' + v).classList.add('active');
@@ -803,6 +823,7 @@ async function saveAttendance() {
       records,
     });
     showToast('保存しました ✓');
+    STATE.unsaved = false;
   } catch (e) {
     showToast('保存失敗: ' + e.message);
   } finally {
@@ -817,6 +838,7 @@ function setStatus(student, status) {
   } else {
     STATE.attendance[student.number] = status;
   }
+  STATE.unsaved = true;
   renderSeatMap();
   renderRoster();
   updateAbsentCount();
@@ -1362,6 +1384,8 @@ function calMove(dir) {
 }
 
 function calSelect(dateStr) {
+  if (STATE.unsaved && !confirm('保存されていない変更があります。日付を移動しますか？')) return;
+  STATE.unsaved = false;
   STATE.pendingDate = dateStr;
   loadAttendance(dateStr);
 }

@@ -31,24 +31,39 @@ function saveStudents(data) {
   const className = data.className;
   const students = data.students;
 
-  // 既存の該当クラスのデータを削除
+  // 既存の休学情報を退避
   const existing = sheet.getDataRange().getValues();
+  const leaveMap = {};
+  existing.slice(1).forEach(row => {
+    if (row[0] === className && row[1] !== '') {
+      leaveMap[String(row[1])] = {
+        leaveStart: row[5] || '',
+        leaveEnd:   row[6] || '',
+      };
+    }
+  });
+
+  // 既存の該当クラスのデータを削除
   const rowsToDelete = [];
   for (let i = existing.length - 1; i >= 1; i--) {
     if (existing[i][0] === className) rowsToDelete.push(i + 1);
   }
   rowsToDelete.forEach(row => sheet.deleteRow(row));
 
+  // 新しいデータを追記（休学情報を引き継ぐ）
   if (students.length > 0) {
-    const rows = students.map(s => [
-      className,
-      s.number,
-      s.name,
-      s.seatRow || '',
-      s.seatCol || '',
-      s.leaveStart || '',
-      s.leaveEnd || '',
-    ]);
+    const rows = students.map(s => {
+      const leave = leaveMap[String(s.number)] || {};
+      return [
+        className,
+        s.number,
+        s.name,
+        s.seatRow || '',
+        s.seatCol || '',
+        leave.leaveStart || '',
+        leave.leaveEnd   || '',
+      ];
+    });
     const lastRow = sheet.getLastRow();
     sheet.getRange(lastRow + 1, 1, rows.length, 7).setValues(rows);
   }
