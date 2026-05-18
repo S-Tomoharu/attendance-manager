@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260517-020';
+const VERSION = '20260518-001';
 
 const STATE = {
   className:      '',
@@ -598,7 +598,7 @@ async function uploadCSV() {
     classData.forEach(s => STATE.students.push({ ...s, leaveStart: '', leaveEnd: '' }));
     showToast(`${classData.length}人 アップロード完了 ✓`);
     renderSeatMap();
-    renderStudentList();
+    renderRoster();
     csvData = [];
     $('csv-preview').textContent = '';
     $('csv-input').value = '';
