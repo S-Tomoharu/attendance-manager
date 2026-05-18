@@ -107,7 +107,37 @@ function saveAttendance(data) {
     }
   });
 
+  // 列を日付順にソート
+  sortAttendanceColumns(sheet);
+
   return { success: true, savedCount: records.length };
+}
+
+// ヘッダー列を日付順にソート
+function sortAttendanceColumns(sheet) {
+  const lastCol = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+  if (lastCol <= 2 || lastRow < 1) return;
+
+  // 3列目以降のデータを取得
+  const numCols = lastCol - 2;
+  const allData = sheet.getRange(1, 3, lastRow, numCols).getValues();
+
+  // 列インデックスをヘッダー（キー）でソート
+  const colIndices = Array.from({ length: numCols }, (_, i) => i);
+  colIndices.sort((a, b) => String(allData[0][a]).localeCompare(String(allData[0][b])));
+
+  // すでに順番通りなら何もしない
+  const isSorted = colIndices.every((v, i) => v === i);
+  if (isSorted) return;
+
+  // ソート後のデータを作成
+  const sorted = allData.map(row => colIndices.map(i => row[i]));
+  sheet.getRange(1, 3, lastRow, numCols).setValues(sorted);
+
+  // ヘッダーの書式を再設定
+  sheet.getRange(1, 3, 1, numCols)
+    .setBackground('#4A90D9').setFontColor('#FFFFFF').setFontWeight('bold').setWrap(true);
 }
 
 // 出欠読み込み（座席マップ用：特定日・時限）
