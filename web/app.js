@@ -214,15 +214,37 @@ async function loadAttendance() {
   }
 }
 
+// ===== 退学・休学判定 =====
+function isWithdrawn(student) {
+  // 座席が割り振られていない → 退学
+  return !student.seatRow && !student.seatCol;
+}
+
+function isOnLeave(student) {
+  // 休学期間中かどうか
+  if (!student.leaveStart) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(student.leaveStart);
+  const end   = student.leaveEnd ? new Date(student.leaveEnd) : null;
+  return today >= start && (!end || today <= end);
+}
+
 // ===== 出欠保存 =====
 async function saveAttendance() {
   if (!STATE.gasUrl) { showToast('GAS URLが未設定です'); return; }
   const classStudents = STATE.students.filter(s => s.className === STATE.className);
-  const records = classStudents.map(s => ({
-    number: s.number,
-    name:   s.name,
-    status: STATE.attendance[s.number] || '出席',
-  }));
+  const records = classStudents.map(s => {
+    // 退学・休学中は空欄で保存
+    if (isWithdrawn(s) || isOnLeave(s)) {
+      return { number: s.number, name: s.name, status: '' };
+    }
+    return {
+      number: s.number,
+      name:   s.name,
+      status: STATE.attendance[s.number] || '出席',
+    };
+  });
   try {
     els.saveBtn.textContent = '保存中...';
     await gasPost('saveAttendance', {
