@@ -591,7 +591,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260528-002';
+const VERSION = '20260528-003';
 
 const STATE = {
   className:      '',
@@ -818,29 +818,17 @@ async function loadAttendance(dateStr) {
   } catch (e) { console.error(e); }
 }
 
-// ===== 退学・休学判定 =====
+// ===== 退学判定 =====
 function isWithdrawn(student) {
   return !student.seatRow && !student.seatCol;
 }
 
-function isOnLeave(student) {
-  if (!student.leaveStart) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const parseDate = str => {
-    const parts = str.split(/[-\/]/).map(Number);
-    return new Date(parts[0], parts[1] - 1, parts[2]);
-  };
-  const start = parseDate(student.leaveStart);
-  const end   = student.leaveEnd ? parseDate(student.leaveEnd) : null;
-  return today >= start && (!end || today <= end);
-}
-
 // ===== 出欠保存 =====
 async function saveAttendance() {
+  const today = new Date().toISOString().split('T')[0];
   const classStudents = STATE.students.filter(s => s.className === STATE.className);
   const records = classStudents.map(s => {
-    if (isWithdrawn(s) || isOnLeave(s)) {
+    if (isWithdrawn(s) || isOnLeave(s, today)) {
       return { number: s.number, name: s.name, status: '' };
     }
     return {
@@ -881,8 +869,15 @@ function setStatus(student, status) {
 
 // ===== 休学期間判定 =====
 function isOnLeave(student, dateStr) {
-  if (!student.leaveStart || !student.leaveEnd) return false;
-  return dateStr >= student.leaveStart && dateStr <= student.leaveEnd;
+  if (!student.leaveStart) return false;
+  const parseDate = str => {
+    const p = str.split(/[-\/]/).map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  };
+  const target = parseDate(dateStr);
+  const start  = parseDate(student.leaveStart);
+  const end    = student.leaveEnd ? parseDate(student.leaveEnd) : null;
+  return target >= start && (!end || target <= end);
 }
 
 // ===== 座席マップ描画 =====
