@@ -329,3 +329,19 @@ function deleteClass(data) {
   }
   return { error: 'クラスが見つかりません' };
 }
+
+// 授業コマ（列）を削除
+function deleteLesson(data) {
+  const ss = getActiveSpreadsheet();
+  const { date, period, className } = data;
+  const sheet = ss.getSheetByName(attendanceSheetName(className));
+  if (!sheet) return { error: 'シートが見つかりません' };
+
+  const key = lessonKey(date, period);
+  const colMap = getLessonColMap(sheet);
+  const col = colMap[key];
+  if (!col) return { error: 'コマが見つかりません' };
+
+  sheet.deleteColumn(col);
+  return { success: true };
+}

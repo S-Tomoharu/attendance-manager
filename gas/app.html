@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260530-002';
+const VERSION = '20260530-003';
 
 const STATE = {
   className:      '',
@@ -530,7 +530,7 @@ async function loadHistory() {
       const [date, period] = key.split('_');
       const d = parseLocalDate(date);
       const label = `${d.getMonth()+1}/${d.getDate()}<br>${period}限`;
-      return `<th>${label}</th>`;
+      return `<th class="lesson-header" data-date="${date}" data-period="${period}" onclick="confirmDeleteLesson(this)" style="cursor:pointer" title="タップで削除">${label}<br><span style="font-size:10px;opacity:0.5">🗑</span></th>`;
     }).join('');
 
     // データ行
@@ -847,4 +847,21 @@ function initHistoryView() {
   if ($('history-start')) $('history-start').value = firstOfMonth;
   if ($('history-end'))   $('history-end').value   = todayStr;
   if ($('history-class-select') && STATE.className) $('history-class-select').value = STATE.className;
+}
+
+// ===== 授業コマ削除 =====
+async function confirmDeleteLesson(th) {
+  const date   = th.dataset.date;
+  const period = th.dataset.period;
+  const className = $('history-class-select').value;
+  const [, month, day] = date.split('-');
+  if (!confirm(`${month}/${day} ${period}限の記録を削除しますか？\nこの操作は取り消せません。`)) return;
+  try {
+    const res = await gasCall('clientDeleteLesson', { date, period, className });
+    if (res.error) { showToast('削除失敗: ' + res.error); return; }
+    showToast('削除しました ✓');
+    loadHistory();
+  } catch (e) {
+    showToast('削除失敗: ' + e.message);
+  }
 }
