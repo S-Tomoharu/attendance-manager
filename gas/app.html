@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260528-003';
+const VERSION = '20260530-001';
 
 const STATE = {
   className:      '',
@@ -14,16 +14,20 @@ const STATE = {
 };
 
 const STATUS_CLASS = {
-  '出席':        'present',
-  '欠席':        'absent',
-  '公欠・出校停止': 'excused',
-  '休学':        'leave',
+  '出席':   'present',
+  '欠席':   'absent',
+  '忌引':   'kiki',
+  '公欠':   'excused',
+  '出校停止': 'teishi',
+  '休学':   'leave',
 };
 
 const STATUS_BADGE = {
-  '欠席':        '欠',
-  '公欠・出校停止': '公',
-  '休学':        '休',
+  '欠席':   '欠',
+  '忌引':   '忌',
+  '公欠':   '公',
+  '出校停止': '停',
+  '休学':   '休',
 };
 
 const $ = id => document.getElementById(id);
@@ -535,7 +539,7 @@ async function loadHistory() {
         const [date, period] = key.split('_');
         const status = (matrix[s.number] || {})[key] || '出席';
         const cls = STATUS_CLASS[status] || 'present';
-        const label = status === '出席' ? '○' : status === '欠席' ? '×' : status === '公欠・出校停止' ? '公' : '休';
+        const label = STATUS_LABEL[status] || '休';
         const onLeave = isOnLeave(s, date);
         if (onLeave || status === '休学') return `<td><span class="matrix-cell leave">－</span></td>`;
         return `<td><span class="matrix-cell ${cls}"
@@ -555,8 +559,8 @@ async function loadHistory() {
 }
 
 // セルをクリックするたびに状態を循環させて即保存
-const STATUS_CYCLE = ['出席', '欠席', '公欠・出校停止'];
-const STATUS_LABEL = { '出席': '○', '欠席': '×', '公欠・出校停止': '公' };
+const STATUS_CYCLE = ['出席', '欠席', '忌引', '公欠', '出校停止'];
+const STATUS_LABEL = { '出席': '○', '欠席': '×', '忌引': '忌', '公欠': '公', '出校停止': '停' };
 
 async function cycleStatus(el) {
   const current = Object.keys(STATUS_LABEL).find(s => STATUS_LABEL[s] === el.textContent) || '出席';

@@ -107,6 +107,8 @@ input[type="date"].select-sm { color: #fff; }
 .legend-item.absent   { background: var(--red-lt);    color: var(--red); }
 .legend-item.excused  { background: var(--blue-lt);   color: var(--blue); }
 .legend-item.leave    { background: #f3f4f6; color: #6b7280; }
+.legend-item.kiki     { background: #f3e8ff; color: #9333ea; }
+.legend-item.teishi   { background: #fff7ed; color: #ea580c; }
 .absent-count { font-size: 14px; color: var(--text-sm); font-weight: 500; }
 
 .blackboard {
@@ -135,6 +137,10 @@ input[type="date"].select-sm { color: #fff; }
 .seat.absent   { border-color: var(--red);    background: var(--red-lt); }
 .seat.excused  { border-color: var(--blue);   background: var(--blue-lt); }
 .seat.leave-seat { border-color: #d1d5db; background: #f3f4f6; opacity: .6; }
+.seat.kiki    { border-color: #9333ea; background: #f3e8ff; }
+.seat.teishi  { border-color: #ea580c; background: #fff7ed; }
+.seat.kiki   .seat-badge { background: #9333ea; color: #fff; }
+.seat.teishi .seat-badge { background: #ea580c; color: #fff; }
 
 .seat.absent  .seat-badge { background: var(--red);  color: #fff; }
 .seat.excused .seat-badge { background: var(--blue); color: #fff; }
@@ -162,6 +168,8 @@ input[type="date"].select-sm { color: #fff; }
 .status-badge.absent   { background: var(--red-lt);    color: var(--red); }
 .status-badge.excused  { background: var(--blue-lt);   color: var(--blue); }
 .status-badge.leave    { background: #f3f4f6; color: #6b7280; }
+.status-badge.kiki    { background: #f3e8ff; color: #9333ea; }
+.status-badge.teishi  { background: #fff7ed; color: #ea580c; }
 
 .history-filter { display: flex; gap: 8px; margin-bottom: 16px; }
 .history-table-wrap { overflow-x: auto; }
@@ -216,9 +224,11 @@ input[type="date"].select-sm { color: #fff; }
   font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s;
 }
 .popup-btn:hover { opacity: .85; }
-.popup-btn.present { grid-column: 1/-1; background: var(--green); color: #fff; }
-.popup-btn.absent  { background: var(--red);  color: #fff; }
-.popup-btn.excused { grid-column: 1/-1; background: var(--blue); color: #fff; }
+.popup-btn.present  { grid-column: 1/-1; background: var(--green);  color: #fff; }
+.popup-btn.absent   { background: var(--red);   color: #fff; }
+.popup-btn.kiki     { background: #9333ea; color: #fff; }
+.popup-btn.excused  { background: var(--blue);  color: #fff; }
+.popup-btn.teishi   { background: #ea580c; color: #fff; }
 .popup-close { background: none; border: none; color: var(--text-sm); font-size: 14px; cursor: pointer; padding: 4px 12px; }
 
 .leave-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
@@ -390,6 +400,8 @@ input[type="date"].select-sm { color: #fff; }
 .matrix-cell.absent   { background: var(--red-lt);    color: var(--red); }
 .matrix-cell.excused  { background: var(--blue-lt);   color: var(--blue); }
 .matrix-cell.leave    { background: #f3f4f6; color: #9ca3af; cursor: default; }
+.matrix-cell.kiki    { background: #9333ea; color: #fff; }
+.matrix-cell.teishi  { background: #ea580c; color: #fff; }
 
 .btn-save-bottom {
   padding: 8px 32px; background: var(--blue); color: #fff;
@@ -591,7 +603,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260528-003';
+const VERSION = '20260530-001';
 
 const STATE = {
   className:      '',
@@ -603,16 +615,20 @@ const STATE = {
 };
 
 const STATUS_CLASS = {
-  '出席':        'present',
-  '欠席':        'absent',
-  '公欠・出校停止': 'excused',
-  '休学':        'leave',
+  '出席':   'present',
+  '欠席':   'absent',
+  '忌引':   'kiki',
+  '公欠':   'excused',
+  '出校停止': 'teishi',
+  '休学':   'leave',
 };
 
 const STATUS_BADGE = {
-  '欠席':        '欠',
-  '公欠・出校停止': '公',
-  '休学':        '休',
+  '欠席':   '欠',
+  '忌引':   '忌',
+  '公欠':   '公',
+  '出校停止': '停',
+  '休学':   '休',
 };
 
 const $ = id => document.getElementById(id);
@@ -1124,7 +1140,7 @@ async function loadHistory() {
         const [date, period] = key.split('_');
         const status = (matrix[s.number] || {})[key] || '出席';
         const cls = STATUS_CLASS[status] || 'present';
-        const label = status === '出席' ? '○' : status === '欠席' ? '×' : status === '公欠・出校停止' ? '公' : '休';
+        const label = STATUS_LABEL[status] || '休';
         const onLeave = isOnLeave(s, date);
         if (onLeave || status === '休学') return `<td><span class="matrix-cell leave">－</span></td>`;
         return `<td><span class="matrix-cell ${cls}"
@@ -1144,8 +1160,8 @@ async function loadHistory() {
 }
 
 // セルをクリックするたびに状態を循環させて即保存
-const STATUS_CYCLE = ['出席', '欠席', '公欠・出校停止'];
-const STATUS_LABEL = { '出席': '○', '欠席': '×', '公欠・出校停止': '公' };
+const STATUS_CYCLE = ['出席', '欠席', '忌引', '公欠', '出校停止'];
+const STATUS_LABEL = { '出席': '○', '欠席': '×', '忌引': '忌', '公欠': '公', '出校停止': '停' };
 
 async function cycleStatus(el) {
   const current = Object.keys(STATUS_LABEL).find(s => STATUS_LABEL[s] === el.textContent) || '出席';
