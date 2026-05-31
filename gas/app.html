@@ -2,7 +2,7 @@
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260530-003';
+const VERSION = '20260601-001';
 
 const STATE = {
   className:      '',
@@ -44,7 +44,7 @@ function gasCall(funcName, params) {
 
 // ===== 初期化 =====
 function init() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = toJSTDateString(new Date());
   if ($('date-input'))    $('date-input').value = today;
   if ($('setup-year'))    $('setup-year').value = new Date().getFullYear();
   if ($('summary-start')) $('summary-start').value = today.slice(0, 7) + '-01';
@@ -240,7 +240,7 @@ function isWithdrawn(student) {
 
 // ===== 出欠保存 =====
 async function saveAttendance() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = toJSTDateString(new Date());
   const classStudents = STATE.students.filter(s => s.className === STATE.className);
   const records = classStudents.map(s => {
     if (isWithdrawn(s) || isOnLeave(s, today)) {
@@ -833,6 +833,11 @@ function calSelect(dateStr) {
   STATE.unsaved = false;
   STATE.pendingDate = dateStr;
   loadAttendance(dateStr);
+}
+
+function toJSTDateString(date) {
+  const jst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().split('T')[0];
 }
 
 function parseLocalDate(dateStr) {
