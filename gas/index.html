@@ -465,9 +465,7 @@ input[type="date"].select-sm { color: #fff; }
       <div class="legend">
         <span class="legend-item present">出席</span>
         <span class="legend-item absent">欠席</span>
-        <span class="legend-item kiki">忌引</span>
-        <span class="legend-item excused">公欠</span>
-        <span class="legend-item teishi">出校停止</span>
+        <span class="legend-item excused">公欠・出校停止</span>
         <span class="legend-item leave">休学</span>
       </div>
       <div class="absent-count">欠席等: <span id="absent-count">0</span>人</div>
@@ -495,7 +493,8 @@ input[type="date"].select-sm { color: #fff; }
       <input type="date" id="history-start">
       <span style="font-size:13px">〜</span>
       <input type="date" id="history-end">
-      <button class="btn-primary" id="history-load-btn">読み込む</button>
+      <button class="btn-primary" id="history-load-btn">表示</button>
+      <button class="btn-secondary" onclick="downloadHistoryCSV()">CSV出力</button>
     </div>
     <div class="history-table-wrap" id="history-table-wrap"></div>
   </section>
@@ -574,9 +573,7 @@ input[type="date"].select-sm { color: #fff; }
     <div class="popup-buttons">
       <button class="popup-btn present" data-status="出席">出席</button>
       <button class="popup-btn absent"  data-status="欠席">欠席</button>
-      <button class="popup-btn kiki"    data-status="忌引">忌引</button>
-      <button class="popup-btn excused" data-status="公欠">公欠</button>
-      <button class="popup-btn teishi"  data-status="出校停止">出校停止</button>
+      <button class="popup-btn excused" data-status="公欠・出校停止">公欠・出校停止</button>
     </div>
     <button class="popup-close" id="popup-close">キャンセル</button>
   </div>
@@ -607,7 +604,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260710-002';
+const VERSION = '20260710-003';
 
 const STATE = {
   className:      '',
@@ -1161,6 +1158,39 @@ async function loadHistory() {
       </table>`;
 
   } catch (e) { showToast('履歴読み込み失敗: ' + e.message); }
+}
+
+// ===== 出欠履歴CSV出力 =====
+function downloadHistoryCSV() {
+  const table = document.querySelector('.history-matrix');
+  if (!table) { showToast('先に履歴を読み込んでください'); return; }
+
+  const className = $('history-class-select').value;
+  const startDate = $('history-start').value;
+  const endDate   = $('history-end').value;
+
+  const rows = [];
+  table.querySelectorAll('tr').forEach(tr => {
+    const cells = [];
+    tr.querySelectorAll('th, td').forEach(cell => {
+      // 改行を除去してテキストを取得（🗑アイコンも除去）
+      const text = cell.innerText.replace(/
+/g, ' ').replace('🗑', '').trim();
+      cells.push('"' + text.replace(/"/g, '""') + '"');
+    });
+    rows.push(cells.join(','));
+  });
+
+  const bom = '﻿';
+  const csv = bom + rows.join('
+');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${className}_出欠履歴_${startDate}_${endDate}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // セルをクリックするたびに状態を循環させて即保存
