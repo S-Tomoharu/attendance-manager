@@ -604,7 +604,7 @@ input[type="date"].select-sm { color: #fff; }
 // app.js - 授業欠課時数管理アプリ（GAS版）
 // =============================================
 
-const VERSION = '20260710-006';
+const VERSION = '20260710-007';
 
 const STATE = {
   className:      '',
@@ -1174,8 +1174,7 @@ function downloadHistoryCSV() {
     const cells = [];
     tr.querySelectorAll('th, td').forEach(cell => {
       // 改行を除去してテキストを取得（🗑アイコンも除去）
-      const text = cell.innerText.replace(/
-/g, ' ').replace('🗑', '').trim();
+      const text = cell.innerText.split('\n').join(' ').replace('🗑', '').trim();
       cells.push('"' + text.replace(/"/g, '""') + '"');
     });
     rows.push(cells.join(','));
