@@ -293,10 +293,9 @@ function getAttendanceSummary(params) {
 
     let lessonCount = 0;
     let absenceCount = 0;
-    const EXCUSED_STATUSES = ['公欠・出校停止', '出校停止', '忌引'];
     lessons.forEach(key => {
       const status = (matrix[s.number] || {})[key] || STATUS.PRESENT;
-      if (!EXCUSED_STATUSES.includes(status)) lessonCount++;
+      if (status !== STATUS.EXCUSED) lessonCount++;
       if (status === STATUS.ABSENT) absenceCount++;
     });
 
@@ -329,4 +328,20 @@ function deleteClass(data) {
     }
   }
   return { error: 'クラスが見つかりません' };
+}
+
+// 授業コマ（列）を削除
+function deleteLesson(data) {
+  const ss = getActiveSpreadsheet();
+  const { date, period, className } = data;
+  const sheet = ss.getSheetByName(attendanceSheetName(className));
+  if (!sheet) return { error: 'シートが見つかりません' };
+
+  const key = lessonKey(date, period);
+  const colMap = getLessonColMap(sheet);
+  const col = colMap[key];
+  if (!col) return { error: 'コマが見つかりません' };
+
+  sheet.deleteColumn(col);
+  return { success: true };
 }
