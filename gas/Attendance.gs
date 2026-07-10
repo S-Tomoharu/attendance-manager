@@ -293,7 +293,7 @@ function getAttendanceSummary(params) {
 
     let lessonCount = 0;
     let absenceCount = 0;
-    const EXCUSED_STATUSES = ['公欠・出校停止', '公欠', '出校停止', '忌引'];
+    const EXCUSED_STATUSES = ['公欠・出校停止', '出校停止', '忌引'];
     lessons.forEach(key => {
       const status = (matrix[s.number] || {})[key] || STATUS.PRESENT;
       if (!EXCUSED_STATUSES.includes(status)) lessonCount++;
